@@ -15,7 +15,7 @@ Welcome to the Adobe After Effects Plugin Standard Library (AETK), a modern C++ 
 
 ## Getting Started
 
-Dive into AETK with our detailed documentation and examples to kickstart your plugin development. Whether you're looking to extend After Effects' capabilities or integrate it into wider media production workflows, AETK offers the foundational tools you need to succeed.
+Dive into AETK with detailed documentation and examples to kickstart your plugin development. See docs [here](https://github.com/Trentonom0r3/AETK/blob/main/docs/AETK.pdf).
 
 ```cpp
 #include "AETK/AEGP/AEGP.hpp"
