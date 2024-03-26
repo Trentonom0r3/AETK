@@ -12,6 +12,7 @@
 #define CONTEXT_HPP
 
 #include "AETK/AEGP/Core/Base/AEGeneral.hpp"
+#include "AETK/AEGP/Exception/Logging.hpp" //Logging utility for AEGP
 
 namespace AE
 {
@@ -118,6 +119,11 @@ class Scoped_Error_Reporter
                 {
                     throw; // Re-throws the caught exception to handle it
                 }
+                catch (const AEException &e)
+                {
+                    // Handle AEGP exceptions by reporting the error message
+                    ReportError(e.what());
+                }
                 catch (const std::exception &e)
                 {
                     // Handle standard exceptions by reporting the error message
@@ -148,7 +154,44 @@ class Scoped_Error_Reporter
      */
     inline void ReportError(const std::string &errorMessage)
     {
-        UtilitySuite6().reportInfoUnicode(errorMessage);
+        UtilitySuite6().reportInfo(errorMessage);
+    }
+};
+
+class Scoped_Error_Logger
+{
+  public:
+    Scoped_Error_Logger() = default;
+
+    ~Scoped_Error_Logger()
+    {
+        try
+        {
+            if (std::current_exception())
+            { // Checks if there's an active exception
+                try
+                {
+                    throw; // Re-throws the caught exception to handle it
+                }
+                catch (const std::exception &e)
+                {
+                    // Use the logging system to report standard exceptions
+                    LOG_ERROR("Scoped_Error_Logger", e.what());
+                }
+                catch (...)
+                {
+                    // Use the logging system to report non-standard exceptions
+                    LOG_ERROR("Scoped_Error_Logger",
+                              "An unknown error occurred.");
+                }
+            }
+        }
+        catch (...)
+        {
+            // Use the logging system to report errors during exception handling
+            LOG_ERROR("Scoped_Error_Logger",
+                      "An error occurred while handling an exception.");
+        }
     }
 };
 

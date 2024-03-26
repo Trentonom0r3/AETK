@@ -47,14 +47,12 @@
 #include <variant>
 #include <vector>
 #include <map>
+#include <sstream> // For std::ostringstream
 
 double TimeToSeconds(
     const A_Time &time); // Will find active comp and convert using frame rate
-double ToFrames(const A_Time &time, const A_Time &frameRate);
-double ToFrames(double time, double frameRate);
 A_Time SecondsToTime(double seconds);
-A_Time FramesToTime(double frames, const A_Time &frameRate);
-A_Time FramesToTime(double frames, double frameRate);
+int TimeToFrames(const A_Time &time);
 
 inline std::string GetErrorMessage(int errorCode)
 {
@@ -1331,6 +1329,9 @@ class LayerSuite9
     SuiteManager &m_suiteManager;
 };
 
+bool isLayerValid(ItemPtr item, CompPtr comp);
+
+
 enum class AE_LayerStream
 {
     // Valid for all layer types
@@ -1623,42 +1624,14 @@ class DynamicStreamSuite4
   private:
     SuiteManager &m_suiteManager;
 };
+;
+using StreamVal = std::variant<double, std::tuple<double, double>,
+							   std::tuple<double, double, double>, std::tuple<double,double,double,double>,
+							   MarkerValPtr, int, MaskOutlineValPtr,
+							   TextDocumentPtr>;
 
-using StreamVal =
-    std::variant<AEGP_OneDVal, AEGP_TwoDVal, AEGP_ThreeDVal, AEGP_ColorVal,
-                 MarkerValPtr, A_long, MaskOutlineValPtr, TextDocumentPtr>;
-
-inline StreamVal CreateStream(AEGP_StreamValue2 val)
-{
-    AE_StreamType streamType;
-    streamType = StreamSuite6().GetStreamType(toStreamRefPtr(val.streamH));
-    switch (streamType)
-    {
-    case AE_StreamType::OneD:
-        return val.val.one_d;
-    case AE_StreamType::TwoD:
-    case AE_StreamType::TwoD_SPATIAL:
-        return val.val.two_d;
-    case AE_StreamType::ThreeD:
-    case AE_StreamType::ThreeD_SPATIAL:
-        return val.val.three_d;
-    case AE_StreamType::COLOR:
-        return val.val.color;
-    case AE_StreamType::MARKER:
-        return std::shared_ptr<AEGP_MarkerValP>(
-            new AEGP_MarkerValP(val.val.markerP), MarkerDeleter());
-    case AE_StreamType::LAYER_ID:
-        return val.val.layer_id;
-    case AE_StreamType::MASK_ID:
-        return val.val.mask_id;
-    case AE_StreamType::MASK:
-        return std::make_shared<AEGP_MaskOutlineValH>(val.val.mask);
-    case AE_StreamType::TEXT_DOCUMENT:
-        return std::make_shared<AEGP_TextDocumentH>(val.val.text_documentH);
-    }
-    StreamSuite6().DisposeStreamValue(val);
-};
-
+using TwoDVal = std::tuple<double, double>;
+using ThreeDVal = std::tuple<double, double, double>;
 enum class AE_KeyframeFlag
 {
     NONE = AEGP_KeyframeFlag_NONE,
@@ -1761,6 +1734,29 @@ class TextDocumentSuite1
     SuiteManager &m_suiteManager;
 };
 
+/*enum {
+	AEGP_MarkerString_NONE,
+
+	AEGP_MarkerString_COMMENT,
+	AEGP_MarkerString_CHAPTER,
+	AEGP_MarkerString_URL,
+	AEGP_MarkerString_FRAME_TARGET,
+	AEGP_MarkerString_CUE_POINT_NAME,
+
+	AEGP_MarkerString_NUMTYPES
+};
+typedef A_long AEGP_MarkerStringType;
+*/
+
+enum class AE_MarkerStringType
+{
+	COMMENT = AEGP_MarkerString_COMMENT,
+	CHAPTER = AEGP_MarkerString_CHAPTER,
+	URL = AEGP_MarkerString_URL,
+	FRAME_TARGET = AEGP_MarkerString_FRAME_TARGET,
+	CUE_POINT_NAME = AEGP_MarkerString_CUE_POINT_NAME
+};
+
 class MarkerSuite3
 {
   public:
@@ -1777,8 +1773,8 @@ class MarkerSuite3
                        bool valueB);
     bool getMarkerFlag(MarkerValPtr markerP, AEGP_MarkerFlagType flagType);
     std::string getMarkerString(MarkerValPtr markerP,
-                                AEGP_MarkerStringType strType);
-    void setMarkerString(MarkerValPtr markerP, AEGP_MarkerStringType strType,
+                                AE_MarkerStringType strType);
+    void setMarkerString(MarkerValPtr markerP, AE_MarkerStringType strType,
                          const std::string &unicodeP, A_long lengthL);
     A_long countCuePointParams(MarkerValPtr markerP);
     std::tuple<std::string, std::string> getIndCuePointParam(
@@ -1794,14 +1790,13 @@ class MarkerSuite3
     A_Time getMarkerDuration(MarkerValPtr markerP);
     void setMarkerLabel(MarkerValPtr markerP, A_long value);
     A_long getMarkerLabel(MarkerValPtr markerP);
-
-  private:
-    SuiteManager &m_suiteManager;
     static inline MarkerValPtr createPtr(AEGP_MarkerValP ref)
     {
         return std::shared_ptr<AEGP_MarkerValP>(new AEGP_MarkerValP(ref),
                                                 MarkerDeleter());
     }
+  private:
+    SuiteManager &m_suiteManager;
 };
 
 class TextLayerSuite1
@@ -1876,6 +1871,7 @@ class EffectSuite4
     A_u_long numEffectMask(EffectRefPtr effect_ref);
     AEGP_MaskIDVal getEffectMaskID(EffectRefPtr effect_ref,
                                    A_u_long mask_indexL);
+    //Reulsts in MaskStream?
     StreamRefPtr addEffectMask(EffectRefPtr effect_ref, AEGP_MaskIDVal id_val);
     void removeEffectMask(EffectRefPtr effect_ref, AEGP_MaskIDVal id_val);
     StreamRefPtr setEffectMask(EffectRefPtr effect_ref, A_u_long mask_indexL,
@@ -1888,6 +1884,18 @@ class EffectSuite4
         return std::shared_ptr<AEGP_EffectRefH>(new AEGP_EffectRefH(ref),
                                                 EffectDeleter());
     }
+};
+
+enum class AE_MaskMode
+{
+    NONE = PF_MaskMode_NONE,
+    ADD = PF_MaskMode_ADD,
+    SUBTRACT = PF_MaskMode_SUBTRACT,
+    INTERSECT = PF_MaskMode_INTERSECT,
+    LIGHTEN = PF_MaskMode_LIGHTEN,
+    DARKEN = PF_MaskMode_DARKEN,
+    DIFF = PF_MaskMode_DIFFERENCE,
+    ACCUM = PF_MaskMode_ACCUM
 };
 
 enum class AE_MaskMBlur
@@ -1914,19 +1922,6 @@ enum class AE_MaskFeatherType
     OUTER = AEGP_MaskFeatherType_OUTER,
     INNER = AEGP_MaskFeatherType_INNER
 };
-
-enum class AE_MaskMode
-{
-    NONE = PF_MaskMode_NONE,
-    ADD = PF_MaskMode_ADD,
-    SUBTRACT = PF_MaskMode_SUBTRACT,
-    INTERSECT = PF_MaskMode_INTERSECT,
-    LIGHTEN = PF_MaskMode_LIGHTEN,
-    DARKEN = PF_MaskMode_DARKEN,
-    DIFF = PF_MaskMode_DIFFERENCE,
-    ACCUM = PF_MaskMode_ACCUM
-};
-
 class MaskSuite6
 {
   public:
@@ -1969,6 +1964,7 @@ class MaskSuite6
     }
 };
 
+
 inline AEGP_MaskFeather createAEGP_MaskFeather()
 {
     AEGP_MaskFeather feather;
@@ -1983,13 +1979,76 @@ inline AEGP_MaskFeather createAEGP_MaskFeather()
 }
 
 inline std::tuple<A_long, PF_FpLong, PF_FpLong, PF_FpShort, PF_FpShort,
-                  AEGP_MaskFeatherInterp, AEGP_MaskFeatherType>
+                  AE_MaskFeatherInterp, AE_MaskFeatherType>
 getAEGP_MaskFeatherInfo(const AEGP_MaskFeather &feather)
 {
     return std::make_tuple(feather.segment, feather.segment_sF, feather.radiusF,
                            feather.ui_corner_angleF, feather.tensionF,
-                           feather.interp, feather.type);
+                           AE_MaskFeatherInterp(feather.interp),
+                           AE_MaskFeatherType(feather.type));
 }
+
+struct MaskVertex
+{
+    double x, y;
+    double tan_in_x, tan_in_y;
+    double tan_out_x, tan_out_y;
+    MaskVertex();
+    MaskVertex(double x, double y, double tan_in_x, double tan_in_y,
+        			   double tan_out_x, double tan_out_y)
+		: x(x), y(y), tan_in_x(tan_in_x), tan_in_y(tan_in_y),
+		  tan_out_x(tan_out_x), tan_out_y(tan_out_y){};
+    MaskVertex(PF_PathVertex vertex) : x(vertex.x), y(vertex.y),
+									   tan_in_x(vertex.tan_in_x),
+									   tan_in_y(vertex.tan_in_y),
+									   tan_out_x(vertex.tan_out_x),
+									   tan_out_y(vertex.tan_out_y){};
+
+    PF_PathVertex toPF_PathVertex()
+    {
+		PF_PathVertex vertex;
+		vertex.x = x;
+		vertex.y = y;
+		vertex.tan_in_x = tan_in_x;
+		vertex.tan_in_y = tan_in_y;
+		vertex.tan_out_x = tan_out_x;
+		vertex.tan_out_y = tan_out_y;
+		return vertex;
+	}
+
+};
+
+
+struct FeatherInfo {
+	A_long segment;
+	PF_FpLong segment_sF;
+	PF_FpLong radiusF;
+	PF_FpShort ui_corner_angleF;
+	PF_FpShort tensionF;
+	AEGP_MaskFeatherInterp interp;
+	AEGP_MaskFeatherType type;
+    FeatherInfo();
+    FeatherInfo(AEGP_MaskFeather feather) : segment(feather.segment),
+												segment_sF(feather.segment_sF),
+												radiusF(feather.radiusF),
+												ui_corner_angleF(feather.ui_corner_angleF),
+												tensionF(feather.tensionF),
+												interp(feather.interp),
+												type(feather.type){};
+
+    AEGP_MaskFeather toAEGP_MaskFeather() {
+        AEGP_MaskFeather feather;
+        feather.segment = segment;
+        feather.segment_sF = segment_sF;
+        feather.radiusF = radiusF;
+        feather.ui_corner_angleF = ui_corner_angleF;
+        feather.tensionF = tensionF;
+        feather.interp = interp;
+        feather.type = type;
+        return feather;
+    }
+
+};
 
 class MaskOutlineSuite3
 {
@@ -2111,8 +2170,8 @@ getAEGP_FootageLayerKeyInfo(const AEGP_FootageLayerKey &key)
 inline AEGP_FileSequenceImportOptions createAEGP_FileSequenceImportOptions()
 {
     AEGP_FileSequenceImportOptions options;
-    options.all_in_folderB = false;
-    options.force_alphabeticalB = false;
+    options.all_in_folderB = true;
+    options.force_alphabeticalB = true;
     options.start_frameL = 0;
     options.end_frameL = 0;
     return options;
@@ -2555,43 +2614,176 @@ class LayerRenderOptionsSuite2
     }
 };
 
+/**
+ * @class RenderSuite5
+ *
+ * RenderSuite5 provides a high-level abstraction over the AEGP_RenderSuite5,
+ * facilitating rendering operations within Adobe After Effects plugins.
+ * It encapsulates synchronous and asynchronous rendering functionalities,
+ * frame checkout, and utility methods for managing rendered frames.
+ *
+ * Usage of synchronous calls on the UI thread is deprecated except in very
+ * specific cases, as they may hinder UI interactivity. Asynchronous methods
+ * are recommended for UI responsiveness.
+ */
 class RenderSuite5
 {
   public:
-	RenderSuite5() : m_suiteManager(SuiteManager::GetInstance()){};
-	RenderSuite5(const RenderSuite5 &) = delete;
-	RenderSuite5 &operator=(const RenderSuite5 &) = delete;
-	RenderSuite5(RenderSuite5 &&) = delete;
-	RenderSuite5 &operator=(RenderSuite5 &&) = delete;
+    /**
+     * Constructs a RenderSuite5 instance, acquiring the necessary AE rendering
+     * suites from the SuiteManager.
+     */
+    RenderSuite5() : m_suiteManager(SuiteManager::GetInstance()){};
 
-	FrameReceiptPtr renderAndCheckoutFrame(RenderOptionsPtr optionsH);
-    FrameReceiptPtr renderAndCheckoutLayerFrame(
-		LayerRenderOptionsPtr optionsH);
+    // Deleted copy and move constructors and assignment operators
+    RenderSuite5(const RenderSuite5 &) = delete;
+    RenderSuite5 &operator=(const RenderSuite5 &) = delete;
+    RenderSuite5(RenderSuite5 &&) = delete;
+    RenderSuite5 &operator=(RenderSuite5 &&) = delete;
 
-	WorldPtr getReceiptWorld(FrameReceiptPtr receiptH);
-	A_LRect getRenderedRegion(FrameReceiptPtr receiptH);
-	bool isRenderedFrameSufficient(RenderOptionsPtr rendered_optionsH,
-								   RenderOptionsPtr proposed_optionsH);
+    /**
+     * Synchronously renders a frame based on given render options and checks it
+     * out.
+     *
+     * @param optionsH Pointer to the render options.
+     * @return A pointer to the frame receipt if successful; nullptr otherwise.
+     */
+    FrameReceiptPtr renderAndCheckoutFrame(RenderOptionsPtr optionsH);
+
+    /**
+     * Synchronously renders a layer frame based on given layer render options
+     * and checks it out.
+     *
+     * @param optionsH Pointer to the layer render options.
+     * @return A pointer to the frame receipt if successful; nullptr otherwise.
+     */
+    FrameReceiptPtr renderAndCheckoutLayerFrame(LayerRenderOptionsPtr optionsH);
+
+    /**
+     * Asynchronously renders a layer frame based on given layer render options.
+     *
+     * @param optionsH Pointer to the layer render options.
+     * @param callback The callback function to be called when the frame is
+     * ready or if the render was canceled.
+     * @return An AEGP_AsyncRequestId associated with the frame request, useful
+     * for cancellation.
+     */
+    A_u_longlong
+    renderAndCheckoutLayerFrameAsync(LayerRenderOptionsPtr optionsH,
+                                     AEGP_AsyncFrameReadyCallback callback);
+
+    /**
+     * Cancels an asynchronous render request.
+     *
+     * @param async_request_id The ID of the render request to cancel.
+     */
+    void cancelAsyncRequest(AEGP_AsyncRequestId async_request_id);
+
+    /**
+     * Retrieves the world associated with a frame receipt.
+     *
+     * @param receiptH The frame receipt.
+     * @return A pointer to the world if successful; nullptr otherwise.
+     */
+    WorldPtr getReceiptWorld(FrameReceiptPtr receiptH);
+
+    /**
+     * Determines the rendered region of a frame receipt.
+     *
+     * @param receiptH The frame receipt.
+     * @return The rendered region as an A_LRect.
+     */
+    A_LRect getRenderedRegion(FrameReceiptPtr receiptH);
+
+    /**
+     * Checks if a rendered frame is sufficient based on proposed render
+     * options.
+     *
+     * @param rendered_optionsH Render options of the already rendered frame.
+     * @param proposed_optionsH Proposed render options to compare against.
+     * @return true if the rendered frame is sufficient; false otherwise.
+     */
+    bool isRenderedFrameSufficient(RenderOptionsPtr rendered_optionsH,
+                                   RenderOptionsPtr proposed_optionsH);
+
+/**
+     * Obtains the current timestamp of the project. This timestamp increases
+     * anytime something in the project affecting rendering is modified.
+     *
+     * @return TimeStampPtr pointing to the current timestamp.
+     */
     TimeStampPtr getCurrentTimestamp();
-	bool hasItemChangedSinceTimestamp(ItemPtr itemH,A_Time start_timeP,
-									  A_Time durationP,
-									  TimeStampPtr time_stampP);
-	bool isItemWorthwhileToRender(RenderOptionsPtr roH,
-                                       TimeStampPtr time_stampP);
-	void checkinRenderedFrame(RenderOptionsPtr roH,
-                              TimeStampPtr time_stampP,
-							  A_u_long ticks_to_renderL,
-							  PlatformWorldPtr imageH);
-	std::string getReceiptGuid(FrameReceiptPtr receiptH);
+
+    /**
+     * Determines if the video content of an item has changed since a specified
+     * timestamp. Audio changes do not affect this determination.
+     *
+     * @param itemH Pointer to the item being queried.
+     * @param start_timeP The start time from which changes are considered.
+     * @param durationP The duration for which changes are considered.
+     * @param time_stampP The timestamp against which changes are checked.
+     * @return true if the item has changed since the given timestamp; false
+     * otherwise.
+     */
+    bool hasItemChangedSinceTimestamp(ItemPtr itemH, A_Time start_timeP,
+                                      A_Time durationP,
+                                      TimeStampPtr time_stampP);
+
+    /**
+     * Evaluates whether rendering a particular frame with specific render
+     * options is worthwhile. This is intended for speculative rendering where
+     * it's necessary to decide whether to render a frame externally and check
+     * it into the cache.
+     *
+     * @param roH The render options for the frame.
+     * @param time_stampP The current project timestamp.
+     * @return true if rendering the frame is considered worthwhile; false
+     * otherwise.
+     */
+    bool isItemWorthwhileToRender(RenderOptionsPtr roH,
+                                  TimeStampPtr time_stampP);
+
+    /**
+     * Checks in a rendered frame to release it. This should be called after a
+     * frame is no longer needed to ensure resources are freed.
+     *
+     * @param roH The render options used for rendering the frame.
+     * @param time_stampP The timestamp when the frame was rendered.
+     * @param ticks_to_renderL The approximate amount of time needed to render
+     * the frame, measured in 60Hz ticks.
+     * @param imageH A platform-specific handle to the rendered image.
+     */
+    void checkinRenderedFrame(RenderOptionsPtr roH, TimeStampPtr time_stampP,
+                              A_u_long ticks_to_renderL,
+                              PlatformWorldPtr imageH);
+
+    /**
+     * Retrieves a globally unique identifier (GUID) for a frame receipt. This
+     * GUID can be used to uniquely identify a frame across sessions.
+     *
+     * @param receiptH The frame receipt from which the GUID is retrieved.
+     * @return A string representation of the GUID.
+     */
+    std::string getReceiptGuid(FrameReceiptPtr receiptH);
+
 
   private:
-	SuiteManager &m_suiteManager;
-	static inline FrameReceiptPtr createPtr(AEGP_FrameReceiptH ref)
-	{
-		return std::shared_ptr<AEGP_FrameReceiptH>(new AEGP_FrameReceiptH(ref),
-												  FrameReceiptDeleter());
-	}
+    SuiteManager
+        &m_suiteManager; ///< The SuiteManager instance for acquiring AE suites.
+
+    /**
+     * Helper function to create a FrameReceiptPtr from an AEGP_FrameReceiptH.
+     *
+     * @param ref The AEGP_FrameReceiptH handle.
+     * @return A shared pointer wrapping the AEGP_FrameReceiptH handle.
+     */
+    static inline FrameReceiptPtr createPtr(AEGP_FrameReceiptH ref)
+    {
+        return std::shared_ptr<AEGP_FrameReceiptH>(new AEGP_FrameReceiptH(ref),
+                                                   FrameReceiptDeleter());
+    }
 };
+
 enum class AE_CollectionItemType
 {
     NONE = AEGP_CollectionItemType_NONE,

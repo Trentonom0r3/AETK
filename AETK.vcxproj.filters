@@ -13,9 +13,72 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Header Files\AETK">
+      <UniqueIdentifier>{ae75167e-19d4-4c7c-8e96-e8b124a1512d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP">
+      <UniqueIdentifier>{27002c6e-0586-4264-8d61-002ffb8cc17d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Core">
+      <UniqueIdentifier>{65e1d599-e3a8-4847-ae13-a48ede397cd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\Effect">
+      <UniqueIdentifier>{c5b651d3-3449-4e49-b628-4e40857dbd51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Core\Base">
+      <UniqueIdentifier>{ba7008e7-bd38-4e12-b799-bf520a8c2a74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Memory">
+      <UniqueIdentifier>{bba9608a-ffd2-4c4c-a539-e45a2920b7c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Template">
+      <UniqueIdentifier>{8e308a7b-789c-4c5c-b8ec-c99ae8d21184}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Util">
+      <UniqueIdentifier>{600fa7be-eed3-4c52-8ef3-2e35b562b2e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\AEGP\Exception">
+      <UniqueIdentifier>{9129a3bd-b109-4c8d-a8fa-74e9986baffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\Effect\Core">
+      <UniqueIdentifier>{2e9646c0-5e83-4dbf-8748-21ed3b30d1f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AETK\Effect\Core\Base">
+      <UniqueIdentifier>{64a9e747-02b5-4844-8080-d9c874f5ae5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aetk\aegp\core\base\AEGeneral.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\AEGP_SuiteHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Base\Property.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Layer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Base\ItemCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Base\LayerCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Base\Misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Effects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Project.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AETK\AEGP\Core\Mask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -23,65 +86,68 @@
     <ClInclude Include="aetk\aegp\AEGP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aetk\aegp\core\App.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\Comp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\Effects.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\Project.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="aetk\aegp\core\base\AEGeneral.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\core\base\Collection.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\base\Import.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\base\Item.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\base\Layer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\core\base\Properties.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\core\base\SuiteManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aetk\aegp\exception\Exception.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\memory\AEAllocator.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Memory</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\memory\AEMemory.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Memory</Filter>
     </ClInclude>
-    <ClInclude Include="aetk\aegp\template\Plugin.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="aetk\aegp\exception\Exception.hpp">
+      <Filter>Header Files\AETK\AEGP\Exception</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\util\Context.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Util\Image.hpp">
+      <Filter>Header Files\AETK\AEGP\Util</Filter>
     </ClInclude>
     <ClInclude Include="aetk\aegp\util\Task.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AETK\AEGP\Util</Filter>
     </ClInclude>
-    <ClInclude Include="aetk\effect\core\base\AEffect.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="aetk\aegp\template\Plugin.hpp">
+      <Filter>Header Files\AETK\AEGP\Template</Filter>
     </ClInclude>
-    <ClInclude Include="aetk\effect\core\base\AEffectGeneral.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="aetk\aegp\core\Project.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
     </ClInclude>
-    <ClInclude Include="aetk\effect\core\base\AEffectSuiteManager.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="aetk\aegp\core\Effects.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="aetk\aegp\core\App.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Exception\Logging.hpp">
+      <Filter>Header Files\AETK\AEGP\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Items.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Layer.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Base\Property.hpp">
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Base\Misc.hpp">
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Mask.hpp">
+      <Filter>Header Files\AETK\AEGP\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Base\ItemCollection.hpp">
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Base\LayerCollection.hpp">
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

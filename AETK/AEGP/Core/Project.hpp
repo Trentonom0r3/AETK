@@ -19,10 +19,9 @@
 #define PROJECT_HPP
 
 #include "AETK/AEGP/Core/Base/AEGeneral.hpp"
-
 namespace AE
 {
-
+class ItemCollection;
 /**
  * @brief A class representing an After Effects Project
  *
@@ -37,8 +36,8 @@ class Project
      *
      * Initializes a new Project object by calling the init() function.
      */
-    Project() : m_proj(init()) {}
-
+    Project() : m_suite(ProjSuite6()), m_proj(init()) {}
+    Project(ProjectPtr proj) : m_suite(ProjSuite6()), m_proj(proj) {}
     /**
      * @brief Destructor
      *
@@ -68,6 +67,12 @@ class Project
      */
     static Project newProject(const std::string &path = "");
 
+    /**
+     * @brief Get the Items in the project
+     * 
+     * \return std::shared_ptr<ItemCollection> The items in the project.
+     */
+    std::shared_ptr<ItemCollection> items();
     /**
      * @brief Get the name of the project
      *
@@ -147,7 +152,7 @@ class Project
     {
         try
         {
-            ProjectPtr proj = m_suite.GetProjectByIndex(0);
+            ProjectPtr proj = ProjSuite6().GetProjectByIndex(0);
             return proj;
         }
         catch (const AEException &e)

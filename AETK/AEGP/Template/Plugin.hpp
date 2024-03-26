@@ -194,9 +194,11 @@ class Plugin
                     *handled = TRUE;
                     return A_Err_NONE;
                 }
+                *handled = false;
             }
+            *handled = false;
         }
-        *handled = TRUE;
+        *handled = false;
         return A_Err_NONE;
     }
 

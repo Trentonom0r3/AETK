@@ -1,18 +1,11 @@
-/*****************************************************************/ /**
-                                                                     * \file
-                                                                     *Task.hpp
-                                                                     * \brief  A
-                                                                     *class for
-                                                                     *creating
-                                                                     *and
-                                                                     *managing
-                                                                     *threads
-                                                                     *
-                                                                     * \author
-                                                                     *tjerf
-                                                                     * \date
-                                                                     *March 2024
-                                                                     *********************************************************************/
+/*****************************************************************//**
+ * \file   Task.hpp
+ * \brief  Threading utility for calling and executing AEGP on the main thread, while
+ * using multiple threads.
+ * 
+ * \author tjerf
+ * \date   March 2024
+ *********************************************************************/
 #ifndef TASK_HPP
 #define TASK_HPP
 

@@ -33,22 +33,21 @@ class App
      * @param data
      * The message to display
      */
-    void Alert(std::any data) const
+    template <typename T> 
+    static void Alert(const T &data)
     {
-        try
+        std::ostringstream stream;
+
+        // Check if T is already a string to avoid unnecessary stream operations
+        if constexpr (std::is_same_v<T, std::string>)
         {
-            if (data.has_value())
-            {
-                UtilitySuite6().reportInfo(std::any_cast<std::string>(data));
-            }
+            UtilitySuite6().reportInfo(data);
         }
-        catch (const std::bad_any_cast &e)
+        else
         {
-            throw e;
-        }
-        catch (const AEException &e)
-        {
-            throw AEException(e);
+            // Try to stream the data into the string stream
+            stream << data;
+            UtilitySuite6().reportInfo(stream.str());
         }
     }
 
@@ -59,7 +58,7 @@ class App
      * @return
      * The main window as a void pointer, cast to platform specific type
      */
-    void *GetWindow() const
+    static void *GetWindow()
     {
         try
         {
@@ -78,7 +77,7 @@ class App
      * \return
      * The file path as a string
      */
-    std::string UserPluginPath()
+    static std::string UserPluginPath()
     {
         try
         {
@@ -97,7 +96,7 @@ class App
      * \return
      * Folder path as a string
      */
-    std::string AllPluginPath()
+    static std::string AllPluginPath()
     {
         try
         {
@@ -116,7 +115,7 @@ class App
      * \return
      * Application path as a string
      */
-    std::string AppPath()
+    static std::string AppPath()
     {
         try
         {
@@ -137,7 +136,7 @@ class App
      * \return
      * ColorVal
      */
-    ColorVal BrushColor(bool useForeground)
+    static ColorVal BrushColor(bool useForeground)
     {
         try
         {
@@ -164,7 +163,7 @@ class App
      * @param useForeground
      * - If true, set the foreground color, else set the background color
      */
-    void SetBrushColor(ColorVal color, bool useForeground)
+    static void SetBrushColor(ColorVal color, bool useForeground)
     {
         try
         {
@@ -182,7 +181,7 @@ class App
             throw e;
         }
     }
-    // no function abailable to swap color being used in paint palette
+    // no function available to swap color being used in paint palette
     /**
      * @brief Get the current color of the Character Palette, based on which is
      * in the front.
@@ -190,7 +189,7 @@ class App
      * @return
      * ColorVal
      */
-    ColorVal CharColor()
+    static ColorVal CharColor()
     {
         try
         {
@@ -217,7 +216,7 @@ class App
      * @param useFill
      * - If true, set the fill color, else set the stroke color
      */
-    void CharColor(ColorVal color, bool useFill)
+    static void CharColor(ColorVal color, bool useFill)
     {
         try
         {

@@ -2266,18 +2266,19 @@ bool MarkerSuite3::getMarkerFlag(MarkerValPtr markerP,
 }
 
 std::string MarkerSuite3::getMarkerString(MarkerValPtr markerP,
-                                          AEGP_MarkerStringType strType)
+                                          AE_MarkerStringType strType)
 {
     CheckNotNull(markerP.get(), "Error Getting Marker String. Marker is Null");
     AEGP_MemHandle stringH;
     AE_CHECK(
         m_suiteManager.GetSuiteHandler().MarkerSuite3()->AEGP_GetMarkerString(
-            *m_suiteManager.GetPluginID(), *markerP.get(), strType, &stringH));
+            *m_suiteManager.GetPluginID(), *markerP.get(),
+            AEGP_MarkerStringType(strType), &stringH));
     return memHandleToString(stringH);
 }
 
 void MarkerSuite3::setMarkerString(MarkerValPtr markerP,
-                                   AEGP_MarkerStringType strType,
+                                   AE_MarkerStringType strType,
                                    const std::string &unicodeP, A_long lengthL)
 {
     CheckNotNull(markerP.get(), "Error Setting Marker String. Marker is Null");
@@ -2285,7 +2286,8 @@ void MarkerSuite3::setMarkerString(MarkerValPtr markerP,
     lengthL = static_cast<A_long>(unicodeP.size());
     AE_CHECK(
         m_suiteManager.GetSuiteHandler().MarkerSuite3()->AEGP_SetMarkerString(
-            *markerP.get(), strType, unicodeP16, lengthL));
+            *markerP.get(), AEGP_MarkerStringType(strType), unicodeP16,
+            lengthL));
 }
 
 A_long MarkerSuite3::countCuePointParams(MarkerValPtr markerP)
@@ -3089,8 +3091,11 @@ ItemPtr FootageSuite5::addFootageToProject(FootagePtr footageH, ItemPtr folderH)
 {
     CheckNotNull(footageH.get(),
                  "Error Adding Footage to Project. Footage is Null");
-    CheckNotNull(folderH.get(),
-                 "Error Adding Footage to Project. Folder is Null");
+    if (!folderH)
+    {
+        folderH = ProjSuite6().GetProjectRootFolder(
+            ProjSuite6().GetProjectByIndex(0));
+    }
     FootagePtr footageH2 = std::make_shared<AEGP_FootageH>(*footageH.get());
     AEGP_ItemH itemH;
     AE_CHECK(m_suiteManager.GetSuiteHandler()
@@ -3263,8 +3268,9 @@ FootageSuite5::getFootageSequenceImportOptions(FootagePtr footageH)
 
 void UtilitySuite6::reportInfo(const std::string &info_string)
 {
+    int id = *m_suiteManager.GetPluginID();
     AE_CHECK(m_suiteManager.GetSuiteHandler().UtilitySuite5()->AEGP_ReportInfo(
-        *m_suiteManager.GetPluginID(), info_string.c_str()));
+        id, info_string.c_str()));
 }
 
 void UtilitySuite6::reportInfoUnicode(const std::string &info_string)
@@ -4609,6 +4615,28 @@ RenderSuite5::renderAndCheckoutLayerFrame(LayerRenderOptionsPtr optionsH)
     return RenderSuite5::createPtr(receiptH);
 }
 
+A_u_longlong RenderSuite5::renderAndCheckoutLayerFrameAsync(
+    LayerRenderOptionsPtr optionsH, AEGP_AsyncFrameReadyCallback callback)
+{
+    CheckNotNull(
+		optionsH.get(),
+		"Error Rendering and Checking Out Layer Frame Asynchronously. Options "
+		"are Null");
+	A_u_longlong id;
+	AE_CHECK(m_suiteManager.GetSuiteHandler()
+    				 .RenderSuite5()
+    				 ->AEGP_RenderAndCheckoutLayerFrame_Async(*optionsH.get(),
+                         									  callback, NULL,
+                         									  &id));
+	return id;
+}
+
+void RenderSuite5::cancelAsyncRequest(AEGP_AsyncRequestId async_request_id) {
+    AE_CHECK(m_suiteManager.GetSuiteHandler()
+    				 .RenderSuite5()
+    				 ->AEGP_CancelAsyncRequest(async_request_id));
+}
+
 WorldPtr RenderSuite5::getReceiptWorld(FrameReceiptPtr receiptH)
 {
     CheckNotNull(receiptH.get(),
@@ -4719,4 +4747,73 @@ std::string RenderSuite5::getReceiptGuid(FrameReceiptPtr receiptH)
         m_suiteManager.GetSuiteHandler().RenderSuite5()->AEGP_GetReceiptGuid(
             *receiptH.get(), &guidH));
     return memHandleToString(guidH);
+}
+
+A_Time SecondsToTime(double seconds)
+{
+    double frameRate =
+		CompSuite11().GetCompFramerate(CompSuite11().GetMostRecentlyUsedComp());
+    A_u_long scale = static_cast<A_u_long>(frameRate);
+    return {static_cast<A_long>(std::round(seconds * scale)), scale};
+}
+
+bool isLayerValid(ItemPtr item, CompPtr comp)
+{
+    return LayerSuite9().IsAddLayerValid(item, comp);
+}
+
+double TimeToSeconds(const A_Time &time)
+{
+    // Scale the value to move the decimal two places to the right
+    double scaledValue = static_cast<double>(time.value) * 100.0 /
+                         static_cast<double>(time.scale);
+
+    // Round the scaled value to the nearest integer
+    double rounded = std::round(scaledValue);
+
+    // Scale the rounded value back down
+    return rounded / 100.0;
+}
+
+
+int TimeToFrames(const A_Time& time)
+{
+    double seconds = TimeToSeconds(time);
+    double frameRate =
+        CompSuite11().GetCompFramerate(CompSuite11().GetMostRecentlyUsedComp());
+    return static_cast<int>(std::round(seconds * frameRate));
+}
+
+A_Time FramesToTime(int frames)
+{
+	double frameRate =
+		CompSuite11().GetCompFramerate(CompSuite11().GetMostRecentlyUsedComp());
+	A_u_long scale = static_cast<A_u_long>(frameRate);
+	return {frames, scale};
+}
+
+void RenderQueueSuite1::addCompToRenderQueue(CompPtr comp,
+                                             const std::string &path)
+{
+    CheckNotNull(comp.get(),
+				 "Error Adding Comp to Render Queue. Comp is Null");
+        AE_CHECK(m_suiteManager.GetSuiteHandler()
+            .RenderQueueSuite1()
+            ->AEGP_AddCompToRenderQueue(
+			*comp.get(), path.c_str()));
+}
+
+void RenderQueueSuite1::setRenderQueueState(AE_RenderQueueState state) {
+        AE_CHECK(m_suiteManager.GetSuiteHandler()
+            .RenderQueueSuite1()
+            ->AEGP_SetRenderQueueState(AEGP_RenderQueueState(state)));
+}
+
+AE_RenderQueueState RenderQueueSuite1::getRenderQueueState()
+{
+    AEGP_RenderQueueState state;
+	AE_CHECK(m_suiteManager.GetSuiteHandler()
+				 .RenderQueueSuite1()
+				 ->AEGP_GetRenderQueueState(&state));
+	return AE_RenderQueueState(state);
 }

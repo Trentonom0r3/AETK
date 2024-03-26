@@ -70,14 +70,14 @@ template <typename T> class Collection
      *
      * \return auto An iterator pointing to the beginning of the collection.
      */
-    auto begin() { return m_collection.begin(); }
+   // auto begin() { return m_collection.begin(); }
 
     /**
      * \brief Get an iterator pointing to the end of the collection.
      *
      * \return auto An iterator pointing to the end of the collection.
      */
-    auto end() { return m_collection.end(); }
+   // auto end() { return m_collection.end(); }
 
     /**
      * \brief Get the size of the collection.
@@ -99,7 +99,7 @@ template <typename T> class Collection
      *
      * \param item The item to be appended.
      */
-    virtual void append(T item) { m_collection.push_back(item); }
+    //virtual void append(T item) { m_collection.push_back(item); }
 
     /**
      * \brief Extend the collection by appending multiple items.
