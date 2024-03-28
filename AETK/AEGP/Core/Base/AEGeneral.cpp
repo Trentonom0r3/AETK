@@ -2083,6 +2083,22 @@ void KeyframeSuite5::SetKeyframeSpatialTangents(StreamRefPtr stream,
                                                    &inTan, &outTan));
 }
 
+std::tuple<AE_KeyframeEase, AE_KeyframeEase>
+KeyframeSuite5::GetKeyframeTemporalEase(StreamRefPtr stream,
+                                        AEGP_KeyframeIndex keyIndex,
+                                        A_long dimension)
+{
+    CheckNotNull(stream.get(),
+				 "Error Getting Keyframe Temporal Ease. Stream is Null");
+    AEGP_KeyframeEase inEase;
+    AEGP_KeyframeEase outEase;
+	AE_CHECK(m_suiteManager.GetSuiteHandler()
+				 .KeyframeSuite5()
+				 ->AEGP_GetKeyframeTemporalEase(*stream.get(), keyIndex,
+											   dimension, &inEase, &outEase));
+        return std::make_tuple(toKeyframeEase(inEase), toKeyframeEase(outEase));
+}
+
 void KeyframeSuite5::SetKeyframeTemporalEase(StreamRefPtr stream,
                                              AEGP_KeyframeIndex keyIndex,
                                              A_long dimension,
@@ -2091,6 +2107,10 @@ void KeyframeSuite5::SetKeyframeTemporalEase(StreamRefPtr stream,
 {
     CheckNotNull(stream.get(),
                  "Error Setting Keyframe Temporal Ease. Stream is Null");
+AE_CHECK(m_suiteManager.GetSuiteHandler()
+.KeyframeSuite5()
+				 ->AEGP_SetKeyframeTemporalEase(*stream.get(), keyIndex, dimension,
+                     &toAEGP_KeyframeEase(inEase), &toAEGP_KeyframeEase(outEase)));
 }
 
 AE_KeyframeFlag KeyframeSuite5::GetKeyframeFlags(StreamRefPtr stream,

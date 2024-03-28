@@ -69,6 +69,9 @@ class Layer : public PropertyGroup
     double offset();
     void setOffset(double offset);
 
+    double inPoint();
+    void setInPoint(double inPoint);
+
     double stretch();
     void setStretch(double stretch);
 
@@ -88,6 +91,7 @@ class Layer : public PropertyGroup
     AE_LayerSamplingQual getSamplingQuality();
     void setSamplingQuality(AE_LayerSamplingQual quality);
 
+    int numEffects();
     //Properties
     std::shared_ptr<BaseProperty> getProperty(AE_LayerStream stream);
 

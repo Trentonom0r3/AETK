@@ -19,9 +19,8 @@
                                                                      *********************************************************************/
 #ifndef AE_MAIN_HPP
 #define AE_MAIN_HPP
-
+#define NOMINMAX
 #include "Headers/AEConfig.h"
-
 
 #ifdef AE_OS_WIN
 #include <windows.h>
@@ -36,24 +35,34 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <sstream> // For std::ostringstream
 #include <string>
 #include <tuple>
 #include <unicode/unistr.h>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <map>
-#include <sstream> // For std::ostringstream
-
+template <class... Ts> struct overloaded : Ts...
+{
+    using Ts::operator()...;
+};
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 double TimeToSeconds(
     const A_Time &time); // Will find active comp and convert using frame rate
 A_Time SecondsToTime(double seconds);
 int TimeToFrames(const A_Time &time);
 
+/**
+ * @brief Converts A_Err into a more meaningful error message.
+ *
+ * \param errorCode
+ * \return String with a meaningful error message.
+ */
 inline std::string GetErrorMessage(int errorCode)
 {
     switch (errorCode)
@@ -99,7 +108,11 @@ inline std::string GetErrorMessage(int errorCode)
                "the documentation or contact support.";
     }
 }
-// Check for error and throw exception
+
+/**
+ * @brief Macro to check if an expression returns an error and throw an
+ * AEException with the error message.
+ */
 #define AE_CHECK(expr)                                                         \
     do                                                                         \
     {                                                                          \
@@ -151,6 +164,11 @@ typedef std::shared_ptr<AEGP_StreamValue2> StreamValue2Ptr;
 typedef std::shared_ptr<AEGP_MemHandle> MemHandlePtr;
 typedef std::shared_ptr<AEGP_TimeStamp> TimeStampPtr;
 
+/**
+ * @brief Custom Deleters for After Effects SDK types
+ * These Wrap AEGP_HANDLEs safely with std::shared_ptr, and call the appropriate
+ * dispose function.
+ */
 class StreamRefDeleter
 {
   public:
@@ -349,16 +367,16 @@ class CollectionDeleter
 class FrameReceiptDeleter
 {
   public:
-	void operator()(AEGP_FrameReceiptH *frameReceipt)
-	{
-		if (frameReceipt && *frameReceipt)
-		{
-			SuiteManager::GetInstance()
-				.GetSuiteHandler()
-				.RenderSuite5()
-				->AEGP_CheckinFrame(*frameReceipt);
-		}
-	}
+    void operator()(AEGP_FrameReceiptH *frameReceipt)
+    {
+        if (frameReceipt && *frameReceipt)
+        {
+            SuiteManager::GetInstance()
+                .GetSuiteHandler()
+                .RenderSuite5()
+                ->AEGP_CheckinFrame(*frameReceipt);
+        }
+    }
 };
 
 enum class AE_MemFlag
@@ -384,18 +402,76 @@ class MemorySuite1
     MemorySuite1(MemorySuite1 &&) = delete;
     MemorySuite1 &operator=(MemorySuite1 &&) = delete;
 
+    /**
+     * @brief Create a new memory handle.
+     *
+     * @param what : A String description of the memory handle.
+     * @param size : The size of the memory handle.
+     * @param flags : The flags for the memory handle.
+     *
+     * @return A shared pointer to the memory handle. Managed and disposed of by
+     * the Custom Deleter.
+     */
     MemHandlePtr NewMemHandle(const std::string &what, AEGP_MemSize size,
                               AE_MemFlag flags); /* New Mem Handle.*/
-    void FreeMemHandle(MemHandlePtr memHandle);  /* Free Mem Handle.*/
+    /**
+     * @brief Free a memory handle.
+     *
+     * @param memHandle : The memory handle to free.
+     *
+     */
+    void FreeMemHandle(MemHandlePtr memHandle); /* Free Mem Handle.*/
+    /**
+     * @brief Lock a memory handle.
+     *
+     * @param memHandle : The memory handle to lock.
+     * @param ptrToPtr : A pointer to a pointer to the memory handle.
+     */
     void LockMemHandle(MemHandlePtr memHandle,
                        void **ptrToPtr);          /* Lock Mem Handle.*/
+                                                  /**
+                                                   * @brief Unlock a memory handle.
+                                                   *
+                                                   * @param memHandle : The memory handle to unlock.
+                                                   */
     void UnlockMemHandle(MemHandlePtr memHandle); /* Unlock Mem Handle.*/
+                                                  /**
+                                                   * @brief Get the size of a memory handle.
+                                                   *
+                                                   * @param memHandle : The memory handle to get the size of.
+                                                   *
+                                                   * @return The size of the memory handle.
+                                                   */
     AEGP_MemSize
     GetMemHandleSize(MemHandlePtr memHandle); /* Get Mem Handle Size.*/
+                                              /**
+                                               * @brief Resize a memory handle.
+                                               *
+                                               * @param what : A String description of the memory handle.
+                                               * @param newSize : The new size of the memory handle.
+                                               * @param memHandle : The memory handle to resize.
+                                               */
     void ResizeMemHandle(const std::string &what, AEGP_MemSize newSize,
                          MemHandlePtr memHandle); /* Resize Mem Handle.*/
-    void SetMemReportingOn(bool turnOn);          /* Set Mem Reporting On.*/
-    std::tuple<A_long, A_long> GetMemStats();     /* Get Mem Stats.*/
+
+    /**
+     * @brief Set Memory Reporting On.
+     *
+     * @param turnOn : A boolean to turn on memory reporting.
+     */
+    void SetMemReportingOn(bool turnOn);      /* Set Mem Reporting On.*/
+                                              /**
+                                               * @brief Get Memory Statistics.
+                                               *
+                                               * @return A tuple of the memory statistics, handles allocated.
+                                               */
+    std::tuple<A_long, A_long> GetMemStats(); /* Get Mem Stats.*/
+    /**
+     * @brief Create a shared pointer to a memory handle.
+     *
+     * \param memHandle
+     * \return
+     */
     static inline MemHandlePtr createPtr(AEGP_MemHandle memHandle)
     {
         return std::shared_ptr<AEGP_MemHandle>(new AEGP_MemHandle(memHandle),
@@ -406,6 +482,12 @@ class MemorySuite1
     SuiteManager &m_suiteManager;
 };
 
+/**
+ * \brief Convert a UTF-8 string to a UTF-16 string.
+ *
+ * \param utf16String
+ * \return
+ */
 inline std::string ConvertUTF16ToUTF8(const A_UTF16Char *utf16String)
 {
     icu::UnicodeString unicodeString(
@@ -415,6 +497,12 @@ inline std::string ConvertUTF16ToUTF8(const A_UTF16Char *utf16String)
     return utf8String;
 }
 
+/**
+ * \brief Convert a UTF-16 string to a UTF-8 string.
+ *
+ * \param utf8String
+ * \return
+ */
 inline std::vector<UChar>
 ConvertUTF8ToUTF16UnSafe(const std::string &utf8String)
 {
@@ -440,6 +528,12 @@ ConvertUTF8ToUTF16UnSafe(const std::string &utf8String)
     return utf16Vector;
 }
 
+/**
+ * \brief Convert a UTF-8 string to a UTF-16 string.
+ *
+ * \param utf8String
+ * \return
+ */
 inline std::vector<A_UTF16Char>
 ConvertUTF8ToUTF16(const std::string &utf8String)
 {
@@ -468,23 +562,27 @@ inline std::string memHandleToString(AEGP_MemHandle memHandle)
  */
 enum class AE_Platform
 {
-    WIN = AEGP_Platform_WIN,
-    MAC = AEGP_Platform_MAC
+    WIN = AEGP_Platform_WIN, /* Windows Platform.*/
+    MAC = AEGP_Platform_MAC  /* Mac Platform.*/
 };
 
+/**
+ * @brief AE Project Bit Depth
+ */
 enum class AE_ProjBitDepth
 {
-    _8 = AEGP_ProjBitDepth_8,
-    _16 = AEGP_ProjBitDepth_16,
-    _32 = AEGP_ProjBitDepth_32,
+    _8 = AEGP_ProjBitDepth_8,   /* 8 Bit Depth.*/
+    _16 = AEGP_ProjBitDepth_16, /* 16 Bit Depth.*/
+    _32 = AEGP_ProjBitDepth_32, /* 32 Bit Depth.*/
     NUM_VALID_DEPTHS = AEGP_ProjBitDepth_NUM_VALID_DEPTHS
 };
 
 /**
  * @brief AE Color Profiles
  *
+ *
  */
-typedef std::tuple<double, double, double, double> ColorVal;
+typedef std::tuple<double, double, double, double> ColorVal; /* Color Value.*/
 
 /**
  * @brief Convert AE ColorVal to ColorVal
@@ -509,19 +607,29 @@ inline AEGP_ColorVal toAEGP_ColorVal(const ColorVal &color)
             std::get<3>(color)};
 }
 
+/**
+ * @brief AE Camera Type
+ *
+ */
 enum class AE_CameraType
 {
-    NONE = AEGP_CameraType_NONE,
-    PERSPECTIVE = AEGP_CameraType_PERSPECTIVE,
-    ORTHOGRAPHIC = AEGP_CameraType_ORTHOGRAPHIC,
+    NONE = AEGP_CameraType_NONE,                 /* No Camera Type.*/
+    PERSPECTIVE = AEGP_CameraType_PERSPECTIVE,   /* Perspective Camera Type.*/
+    ORTHOGRAPHIC = AEGP_CameraType_ORTHOGRAPHIC, /* Orthographic Camera Type.*/
     NUM_TYPES = AEGP_CameraType_NUM_TYPES
 };
 
+/**
+ * @brief AE Time Display Type
+ *
+ */
 enum class AE_TimeDisplayType
 {
-    TIMECODE = AEGP_TimeDisplayType_TIMECODE,
-    FRAMES = AEGP_TimeDisplayType_FRAMES,
-    FEET_AND_FRAMES = AEGP_TimeDisplayType_FEET_AND_FRAMES
+    TIMECODE = AEGP_TimeDisplayType_TIMECODE, /* Timecode Display Type.*/
+    FRAMES = AEGP_TimeDisplayType_FRAMES,     /* Frames Display Type.*/
+    FEET_AND_FRAMES =
+        AEGP_TimeDisplayType_FEET_AND_FRAMES /* Feet and Frames
+                                                                                                            Display Type.*/
 };
 
 enum class AE_FilmSizeUnits
@@ -1331,7 +1439,6 @@ class LayerSuite9
 
 bool isLayerValid(ItemPtr item, CompPtr comp);
 
-
 enum class AE_LayerStream
 {
     // Valid for all layer types
@@ -1625,10 +1732,11 @@ class DynamicStreamSuite4
     SuiteManager &m_suiteManager;
 };
 ;
-using StreamVal = std::variant<double, std::tuple<double, double>,
-							   std::tuple<double, double, double>, std::tuple<double,double,double,double>,
-							   MarkerValPtr, int, MaskOutlineValPtr,
-							   TextDocumentPtr>;
+using StreamVal =
+    std::variant<double, std::tuple<double, double>,
+                 std::tuple<double, double, double>,
+                 std::tuple<double, double, double, double>, MarkerValPtr, int,
+                 MaskOutlineValPtr, TextDocumentPtr>;
 
 using TwoDVal = std::tuple<double, double>;
 using ThreeDVal = std::tuple<double, double, double>;
@@ -1735,26 +1843,26 @@ class TextDocumentSuite1
 };
 
 /*enum {
-	AEGP_MarkerString_NONE,
+        AEGP_MarkerString_NONE,
 
-	AEGP_MarkerString_COMMENT,
-	AEGP_MarkerString_CHAPTER,
-	AEGP_MarkerString_URL,
-	AEGP_MarkerString_FRAME_TARGET,
-	AEGP_MarkerString_CUE_POINT_NAME,
+        AEGP_MarkerString_COMMENT,
+        AEGP_MarkerString_CHAPTER,
+        AEGP_MarkerString_URL,
+        AEGP_MarkerString_FRAME_TARGET,
+        AEGP_MarkerString_CUE_POINT_NAME,
 
-	AEGP_MarkerString_NUMTYPES
+        AEGP_MarkerString_NUMTYPES
 };
 typedef A_long AEGP_MarkerStringType;
 */
 
 enum class AE_MarkerStringType
 {
-	COMMENT = AEGP_MarkerString_COMMENT,
-	CHAPTER = AEGP_MarkerString_CHAPTER,
-	URL = AEGP_MarkerString_URL,
-	FRAME_TARGET = AEGP_MarkerString_FRAME_TARGET,
-	CUE_POINT_NAME = AEGP_MarkerString_CUE_POINT_NAME
+    COMMENT = AEGP_MarkerString_COMMENT,
+    CHAPTER = AEGP_MarkerString_CHAPTER,
+    URL = AEGP_MarkerString_URL,
+    FRAME_TARGET = AEGP_MarkerString_FRAME_TARGET,
+    CUE_POINT_NAME = AEGP_MarkerString_CUE_POINT_NAME
 };
 
 class MarkerSuite3
@@ -1795,6 +1903,7 @@ class MarkerSuite3
         return std::shared_ptr<AEGP_MarkerValP>(new AEGP_MarkerValP(ref),
                                                 MarkerDeleter());
     }
+
   private:
     SuiteManager &m_suiteManager;
 };
@@ -1871,7 +1980,7 @@ class EffectSuite4
     A_u_long numEffectMask(EffectRefPtr effect_ref);
     AEGP_MaskIDVal getEffectMaskID(EffectRefPtr effect_ref,
                                    A_u_long mask_indexL);
-    //Reulsts in MaskStream?
+    // Reulsts in MaskStream?
     StreamRefPtr addEffectMask(EffectRefPtr effect_ref, AEGP_MaskIDVal id_val);
     void removeEffectMask(EffectRefPtr effect_ref, AEGP_MaskIDVal id_val);
     StreamRefPtr setEffectMask(EffectRefPtr effect_ref, A_u_long mask_indexL,
@@ -1964,7 +2073,6 @@ class MaskSuite6
     }
 };
 
-
 inline AEGP_MaskFeather createAEGP_MaskFeather()
 {
     AEGP_MaskFeather feather;
@@ -1995,48 +2103,45 @@ struct MaskVertex
     double tan_out_x, tan_out_y;
     MaskVertex();
     MaskVertex(double x, double y, double tan_in_x, double tan_in_y,
-        			   double tan_out_x, double tan_out_y)
-		: x(x), y(y), tan_in_x(tan_in_x), tan_in_y(tan_in_y),
-		  tan_out_x(tan_out_x), tan_out_y(tan_out_y){};
-    MaskVertex(PF_PathVertex vertex) : x(vertex.x), y(vertex.y),
-									   tan_in_x(vertex.tan_in_x),
-									   tan_in_y(vertex.tan_in_y),
-									   tan_out_x(vertex.tan_out_x),
-									   tan_out_y(vertex.tan_out_y){};
+               double tan_out_x, double tan_out_y)
+        : x(x), y(y), tan_in_x(tan_in_x), tan_in_y(tan_in_y),
+          tan_out_x(tan_out_x), tan_out_y(tan_out_y){};
+    MaskVertex(PF_PathVertex vertex)
+        : x(vertex.x), y(vertex.y), tan_in_x(vertex.tan_in_x),
+          tan_in_y(vertex.tan_in_y), tan_out_x(vertex.tan_out_x),
+          tan_out_y(vertex.tan_out_y){};
 
     PF_PathVertex toPF_PathVertex()
     {
-		PF_PathVertex vertex;
-		vertex.x = x;
-		vertex.y = y;
-		vertex.tan_in_x = tan_in_x;
-		vertex.tan_in_y = tan_in_y;
-		vertex.tan_out_x = tan_out_x;
-		vertex.tan_out_y = tan_out_y;
-		return vertex;
-	}
-
+        PF_PathVertex vertex;
+        vertex.x = x;
+        vertex.y = y;
+        vertex.tan_in_x = tan_in_x;
+        vertex.tan_in_y = tan_in_y;
+        vertex.tan_out_x = tan_out_x;
+        vertex.tan_out_y = tan_out_y;
+        return vertex;
+    }
 };
 
-
-struct FeatherInfo {
-	A_long segment;
-	PF_FpLong segment_sF;
-	PF_FpLong radiusF;
-	PF_FpShort ui_corner_angleF;
-	PF_FpShort tensionF;
-	AEGP_MaskFeatherInterp interp;
-	AEGP_MaskFeatherType type;
+struct FeatherInfo
+{
+    A_long segment;
+    PF_FpLong segment_sF;
+    PF_FpLong radiusF;
+    PF_FpShort ui_corner_angleF;
+    PF_FpShort tensionF;
+    AEGP_MaskFeatherInterp interp;
+    AEGP_MaskFeatherType type;
     FeatherInfo();
-    FeatherInfo(AEGP_MaskFeather feather) : segment(feather.segment),
-												segment_sF(feather.segment_sF),
-												radiusF(feather.radiusF),
-												ui_corner_angleF(feather.ui_corner_angleF),
-												tensionF(feather.tensionF),
-												interp(feather.interp),
-												type(feather.type){};
+    FeatherInfo(AEGP_MaskFeather feather)
+        : segment(feather.segment), segment_sF(feather.segment_sF),
+          radiusF(feather.radiusF), ui_corner_angleF(feather.ui_corner_angleF),
+          tensionF(feather.tensionF), interp(feather.interp),
+          type(feather.type){};
 
-    AEGP_MaskFeather toAEGP_MaskFeather() {
+    AEGP_MaskFeather toAEGP_MaskFeather()
+    {
         AEGP_MaskFeather feather;
         feather.segment = segment;
         feather.segment_sF = segment_sF;
@@ -2047,7 +2152,6 @@ struct FeatherInfo {
         feather.type = type;
         return feather;
     }
-
 };
 
 class MaskOutlineSuite3
@@ -2522,7 +2626,7 @@ class WorldSuite3
                                       A_long heightL);
     WorldPtr newReferenceFromPlatformWorld(PlatformWorldPtr platform_worldH);
 
-      static inline WorldPtr createPtr(AEGP_WorldH ref)
+    static inline WorldPtr createPtr(AEGP_WorldH ref)
     {
         return std::shared_ptr<AEGP_WorldH>(new AEGP_WorldH(ref),
                                             WorldDeleter());
@@ -2532,9 +2636,9 @@ class WorldSuite3
         return std::shared_ptr<AEGP_PlatformWorldH>(
             new AEGP_PlatformWorldH(ref), PlatformDeleter());
     }
+
   private:
     SuiteManager &m_suiteManager;
- 
 };
 
 class RenderOptionsSuite4
@@ -2706,7 +2810,7 @@ class RenderSuite5
     bool isRenderedFrameSufficient(RenderOptionsPtr rendered_optionsH,
                                    RenderOptionsPtr proposed_optionsH);
 
-/**
+    /**
      * Obtains the current timestamp of the project. This timestamp increases
      * anytime something in the project affecting rendering is modified.
      *
@@ -2765,7 +2869,6 @@ class RenderSuite5
      * @return A string representation of the GUID.
      */
     std::string getReceiptGuid(FrameReceiptPtr receiptH);
-
 
   private:
     SuiteManager
@@ -2921,5 +3024,207 @@ class CommandSuite1
   private:
     SuiteManager &m_suiteManager;
 };
+/*
 
+#define kAEGPRenderQueueMonitorSuite				"AEGP
+RenderQueue Monitor Suite" #define kAEGPRenderQueueMonitorSuiteVersion1
+1 /* frozen AE 11.0
+
+typedef struct _AEGP_RQM_Refcon *AEGP_RQM_Refcon;
+typedef A_u_longlong AEGP_RQM_SessionId;
+typedef A_u_longlong AEGP_RQM_ItemId;
+typedef A_u_longlong AEGP_RQM_FrameId;
+
+typedef enum
+{
+    AEGP_RQM_FinishedStatus_UNKNOWN,
+    AEGP_RQM_FinishedStatus_SUCCEEDED,
+    AEGP_RQM_FinishedStatus_ABORTED,
+    AEGP_RQM_FinishedStatus_ERRED
+} AEGP_RQM_FinishedStatus;
+
+typedef struct _AEGP_RQM_BasicData
+{
+    const struct SPBasicSuite *pica_basicP;
+    A_long aegp_plug_id;
+    AEGP_RQM_Refcon aegp_refconPV;
+} AEGP_RQM_BasicData;
+
+typedef struct _AEGP_RQM_FunctionBlock1
+{
+    A_Err (*AEGP_RQM_RenderJobStarted)(AEGP_RQM_BasicData *basic_dataP,
+                                       AEGP_RQM_SessionId jobid);
+    A_Err (*AEGP_RQM_RenderJobEnded)(AEGP_RQM_BasicData *basic_dataP,
+                                     AEGP_RQM_SessionId jobid);
+    A_Err (*AEGP_RQM_RenderJobItemStarted)(AEGP_RQM_BasicData *basic_dataP,
+                                           AEGP_RQM_SessionId jobid,
+                                           AEGP_RQM_ItemId itemid);
+    A_Err (*AEGP_RQM_RenderJobItemUpdated)(AEGP_RQM_BasicData *basic_dataP,
+                                           AEGP_RQM_SessionId jobid,
+                                           AEGP_RQM_ItemId itemid,
+                                           AEGP_RQM_FrameId frameid);
+    A_Err (*AEGP_RQM_RenderJobItemEnded)(AEGP_RQM_BasicData *basic_dataP,
+                                         AEGP_RQM_SessionId jobid,
+                                         AEGP_RQM_ItemId itemid,
+                                         AEGP_RQM_FinishedStatus fstatus);
+    A_Err (*AEGP_RQM_RenderJobItemReportLog)(AEGP_RQM_BasicData *basic_dataP,
+                                             AEGP_RQM_SessionId jobid,
+                                             AEGP_RQM_ItemId itemid,
+                                             A_Boolean isError,
+                                             AEGP_MemHandle logbuf);
+} AEGP_RQM_FunctionBlock1;
+
+typedef struct AEGP_RenderQueueMonitorSuite1
+{
+
+    SPAPI A_Err (*AEGP_RegisterListener)( //use custom deleter here
+        AEGP_PluginID aegp_plugin_id,               /* >>
+        AEGP_RQM_Refcon aegp_refconP,               /* >>
+        const AEGP_RQM_FunctionBlock1 *fcn_blockP); /* >>
+
+    SPAPI
+        A_Err (*AEGP_DeregisterListener)(AEGP_PluginID aegp_plugin_id,  /* >>
+                                         AEGP_RQM_Refcon aegp_refconP); /* >>
+
+    SPAPI A_Err (*AEGP_GetProjectName)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_MemHandle
+            *utf_project_namePH0); // <<	handle of A_UTF16Char (contains
+null
+                                   // terminated UTF16 string); must be disposed
+                                   // with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetAppVersion)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_MemHandle
+            *utf_app_versionPH0); // <<	handle of A_UTF16Char (contains null
+                                  // terminated UTF16 string); must be disposed
+                                  // with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetNumJobItems)(AEGP_RQM_SessionId sessid, // >>
+                                       A_long *num_jobitemsPL);   // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemID)(AEGP_RQM_SessionId sessid,   // >>
+                                     A_long jobItemIndex,         // >>
+                                     AEGP_RQM_ItemId *jobItemID); // <<
+
+    SPAPI A_Err (*AEGP_GetNumJobItemRenderSettings)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long *num_settingsPL);   // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemRenderSetting)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long settingIndex,       // >>
+        AEGP_MemHandle
+            *utf_setting_namePH0, // <<	handle of A_UTF16Char (contains null
+                                  // terminated UTF16 string); must be disposed
+                                  // with AEGP_FreeMemHandle
+        AEGP_MemHandle
+            *utf_setting_valuePH0); // <<	handle of A_UTF16Char (contains
+null
+                                    // terminated UTF16 string); must be
+                                    // disposed with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetNumJobItemOutputModules)(
+        AEGP_RQM_SessionId sessid,    // >>
+        AEGP_RQM_ItemId itemid,       // >>
+        A_long *num_outputmodulesPL); // <<
+
+    SPAPI A_Err (*AEGP_GetNumJobItemOutputModuleSettings)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long *num_settingsPL);   // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemOutputModuleSetting)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long settingIndex,       // >>
+        AEGP_MemHandle
+            *utf_setting_namePH0, // <<	handle of A_UTF16Char (contains null
+                                  // terminated UTF16 string); must be disposed
+                                  // with AEGP_FreeMemHandle
+        AEGP_MemHandle
+            *utf_setting_valuePH0); // <<	handle of A_UTF16Char (contains
+null
+                                    // terminated UTF16 string); must be
+                                    // disposed with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetNumJobItemOutputModuleWarnings)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long *num_warningsPL);   // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemOutputModuleWarning)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long warningIndex,       // >>
+        AEGP_MemHandle
+            *utf_warning_valuePH0); // <<	handle of A_UTF16Char (contains
+null
+                                    // terminated UTF16 string); must be
+                                    // disposed with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetNumJobItemFrameProperties)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        AEGP_RQM_FrameId frameid,  // >>
+        A_long *num_propertiesPL); // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemFrameProperty)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        AEGP_RQM_FrameId frameid,  // >>
+        A_long propertyIndex,      // >>
+        AEGP_MemHandle
+            *utf_property_namePH0, // <<	handle of A_UTF16Char (contains
+null
+                                   // terminated UTF16 string); must be disposed
+                                   // with AEGP_FreeMemHandle
+        AEGP_MemHandle
+            *utf_property_valuePH0); // <<	handle of A_UTF16Char (contains
+                                     // null terminated UTF16 string); must be
+                                     // disposed with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetNumJobItemOutputModuleProperties)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long *num_propertiesPL); // <<
+
+    SPAPI A_Err (*AEGP_GetJobItemOutputModuleProperty)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        A_long outputModuleIndex,  // >>
+        A_long propertyIndex,      // >>
+        AEGP_MemHandle
+            *utf_property_namePH0, // <<	handle of A_UTF16Char (contains
+null
+                                   // terminated UTF16 string); must be disposed
+                                   // with AEGP_FreeMemHandle
+        AEGP_MemHandle
+            *utf_property_valuePH0); // <<	handle of A_UTF16Char (contains
+                                     // null terminated UTF16 string); must be
+                                     // disposed with AEGP_FreeMemHandle
+
+    SPAPI A_Err (*AEGP_GetJobItemFrameThumbnail)(
+        AEGP_RQM_SessionId sessid, // >>
+        AEGP_RQM_ItemId itemid,    // >>
+        AEGP_RQM_FrameId frameid,  // >>
+        A_long *widthPL,  // <> 	pass in the maximum width, returns the
+actual
+                          // width
+        A_long *heightPL, // <>	pass in the maximum height, returns the actual
+                          // height
+        AEGP_MemHandle *thumbnailPH0); // <<	handle of an image memory block
+                                       // in JPEG format
+
+} AEGP_RenderQueueMonitorSuite1;
+
+*/
 #endif // AE_MAIN_HPP

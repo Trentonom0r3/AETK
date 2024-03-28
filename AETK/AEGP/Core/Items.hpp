@@ -33,6 +33,9 @@ class ItemCollection;
 class Layer;
 class LayerCollection;
 
+/**
+ * Item class is a wrapper for AEGP_ItemH, and its associated functions
+ */
 class Item
 {
   public:
@@ -40,45 +43,45 @@ class Item
     Item(ItemPtr item) : m_item(item), m_itemSuite(ItemSuite9()) {}
     virtual ~Item() = default;
 
-    static std::shared_ptr<Item> activeItem();
+    static std::shared_ptr<Item> activeItem(); /*Gets the Active Item. Typically a CompItem*/
 
     ItemPtr getItem() const { return m_item; }
     void setItem(ItemPtr item) { m_item = item; }
 
-    virtual AE_ItemType itemType() { return AE_ItemType::NONE; }
-    std::string typeName();
+    virtual AE_ItemType itemType() { return AE_ItemType::NONE; } 
+    std::string typeName(); // Returns the type of the item as a string
 
-    bool isSelected();
-    void setSelection(bool select, bool deselectOthers = false);
+    bool isSelected(); // Returns true if the item is selected
+    void setSelection(bool select, bool deselectOthers = false); // Selects or deselects the item
     // TODO Implement Tis
 
-    bool isFlagSet(AE_ItemFlag flag);
-    void setFlag(AE_ItemFlag flag, bool value);
+    bool isFlagSet(AE_ItemFlag flag); // Returns true if the flag is set
+    void setFlag(AE_ItemFlag flag, bool value); // Sets or unsets the flag
 
-    std::string name();
-    void setName(const std::string &name);
+    std::string name(); // Returns the name of the item
+    void setName(const std::string &name); // Sets the name of the item
 
-    void setProxyUse(bool useProxy);
+    void setProxyUse(bool useProxy); // Sets the use of proxy for the item
 
-    std::shared_ptr<FolderItem> parentFolder();
-    void setParentFolder(std::shared_ptr<FolderItem> folder);
+    std::shared_ptr<FolderItem> parentFolder(); // Returns the parent folder of the item
+    void setParentFolder(std::shared_ptr<FolderItem> folder); // Sets the parent folder of the item
 
-    double duration();
+    double duration(); // Returns the duration of the item in seconds
 
-    double currentTime(); // in seconds
+    double currentTime(); // in seconds 
     void setCurrentTime(double time); // in seconds
 
-    std::string comment();
-    void setComment(const std::string &comment);
+    std::string comment(); // Returns the comment of the item
+    void setComment(const std::string &comment); // Sets the comment of the item
 
-    AE_Label label();
-    void setLabel(AE_Label label);
+    AE_Label label(); // Returns the label of the item
+    void setLabel(AE_Label label); // Sets the label of the item
 
-    std::tuple<int, int> dimensions();
+    std::tuple<int, int> dimensions(); // Returns the dimensions of the item
 
-    double pixelAspect();
+    double pixelAspect(); // Returns the pixel aspect ratio of the item
 
-    void deleteItem();
+    void deleteItem(); // Deletes the item
 
   protected:
     ItemPtr m_item;
