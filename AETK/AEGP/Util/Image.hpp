@@ -74,7 +74,8 @@ class Image
   public:
     explicit Image(WorldPtr world) : mWorld(world) {}
 
-    inline UniformImage data(){
+    static inline UniformImage data(WorldPtr mWorld)
+    {
         std::tuple<A_long, A_long> size = WorldSuite3().getSize(mWorld);
         auto rowbytes = WorldSuite3().getRowBytes(mWorld);
         void *baseAddr = nullptr;
@@ -109,9 +110,9 @@ class Image
 #endif
 
         // New method to save the image using stb_image_write.h
-    inline void saveImage(const std::string &filename, const std::string &format)
+    static inline void saveImage(const std::string &filename, const std::string &format, UniformImage img)
     {
-        auto imageData = data(); // Assume this returns your UniformImage type
+        auto imageData = img; // Assume this returns your UniformImage type
                                  // with image data
         int width = imageData.width;
         int height = imageData.height;

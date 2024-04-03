@@ -37,12 +37,12 @@
 #include "AETK/AEGP/Exception/Logging.hpp" //Logging utility for AEGP
 
 //Utility Imports
-//#include "AETK/AEGP/Util/Context.hpp" //Scoped Context Managers for AEGP Calls
+#include "AETK/AEGP/Util/Context.hpp" //Scoped Context Managers for AEGP Calls
 #include "AETK/AEGP/Util/Task.hpp" // Threading utility for calling and executing AEGP with multiple threads.
 #include "AETK/AEGP/Util/Image.hpp" // Image utility for AEGP
 
 //Template Imports -Ommitted until further testing
-//#include "AETK/AEGP/Template/Plugin.hpp" //Template class for designing plugins
+#include "AETK/AEGP/Template/Plugin.hpp" //Template class for designing plugins
 
 #endif // !AEGP_HPP
 

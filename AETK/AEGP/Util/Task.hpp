@@ -13,7 +13,38 @@
 
 /**
  * @class TaskScheduler
- * @brief Manages the scheduling and execution of tasks.
+ * @brief Manages the scheduling and execution of tasks within an Adobe After Effects plugin.
+ *
+ * This class implements the singleton design pattern to ensure there is a single, globally accessible
+ * instance managing task execution throughout the plugin's lifecycle.
+ *
+ * TaskScheduler allows for tasks to be scheduled from any thread but ensures they are executed on the main thread,
+ * leveraging Adobe After Effects' Idle Hook for task execution. This approach facilitates performing tasks that require
+ * the main thread, such as UI updates or AE SDK operations, even when initiated from background threads.
+ *
+ * @note Important Usage Guidelines:
+ * - Avoid using TaskScheduler within AE's Command Hook or other Hooks to schedule tasks with CALLIDLE set to True.
+ *   Doing so can lead to issues like unresponsiveness or crashes due to calling Idle Routines while a Hook is still
+ * active.
+ * - When CALLIDLE is set to False, TaskScheduler can safely be used within any Hook. This defers task execution until
+ *   the next idle cycle without explicitly invoking idle routines.
+ * - For tasks initiated from separate threads (e.g., a listener thread for external commands), setting CALLIDLE to True
+ * is recommended. This allows the plugin to process tasks promptly while maintaining responsiveness.
+ *
+ * Usage Example:
+ * ```
+ * // In a listener thread waiting for external commands
+ * void externalCommandReceived() {
+ *     // Schedule a task for execution on the main thread
+ *     TaskScheduler::GetInstance().ScheduleTask([]() {
+ *         // Task to be executed on the main thread
+ *     }, true); // CALLIDLE is True, enabling immediate idle processing
+ * }
+ * ```
+ *
+ * In this example, an external command triggers `externalCommandReceived`, which schedules a task. The TaskScheduler,
+ * upon the next idle cycle, executes this task on the main thread, ensuring compatibility with AE SDK requirements and
+ * maintaining plugin responsiveness.
  */
 class TaskScheduler
 {
@@ -40,7 +71,7 @@ class TaskScheduler
         tasksQueue.push(std::move(task));
         if (callIdle)
         {
-            UtilitySuite6().causeIdleRoutinesToBeCalled();
+            SuiteManager::GetInstance().GetSuiteHandler().UtilitySuite6()->AEGP_CauseIdleRoutinesToBeCalled();
         }
     }
 

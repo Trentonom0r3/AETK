@@ -11,6 +11,13 @@ void BaseProperty::setName(const std::string &name)
     DynamicStreamSuite4().SetStreamName(m_property, name);
 }
 
+std::shared_ptr<BaseProperty> BaseProperty::duplicate()
+{
+    int newStream = DynamicStreamSuite4().DuplicateStream(m_property);
+    auto stream = DynamicStreamSuite4().GetNewStreamRefByIndex(m_property, newStream);
+    return PropertyFactory::CreateProperty(stream);
+}
+
 std::string BaseProperty::matchName() const
 {
     return DynamicStreamSuite4().GetMatchname(m_property);
@@ -25,13 +32,13 @@ std::shared_ptr<BaseProperty>
 BaseProperty::getProperty(const std::string &name) const
 {
     auto stream = DynamicStreamSuite4().GetNewStreamRefByMatchname(m_property, name);
-    return std::make_shared<BaseProperty>(stream);
+    return PropertyFactory::CreateProperty(stream);
 }
 
 std::shared_ptr<BaseProperty> BaseProperty::getProperty(int index) const
 {
     auto stream = DynamicStreamSuite4().GetNewStreamRefByIndex(m_property, index);
-	return std::make_shared<BaseProperty>(stream);
+    return PropertyFactory::CreateProperty(stream);
 }
 
 void BaseProperty::addProperty(const std::string &name) const {
@@ -129,6 +136,18 @@ std::shared_ptr<Marker> MarkerProperty::getValue(AE_LTimeMode timeMode,
         AEGP_MarkerValP markerVal = val.val.markerP;
         MarkerValPtr markerPtr = MarkerSuite3::createPtr(markerVal);
         return std::make_shared<Marker>(markerPtr);
+}
+
+std::shared_ptr<Marker> MarkerProperty::addMarker(double time)
+{
+        auto idx = KeyframeSuite5().InsertKeyframe(m_property, AE_LTimeMode::CompTime, SecondsToTime(time));
+        MarkerValPtr mrk = MarkerSuite3().getNewMarker();
+        AEGP_StreamValue2 val;
+        val.streamH = *m_property;
+        val.val.markerP = *mrk;
+        KeyframeSuite5().SetKeyframeValue(m_property, idx, val);
+
+        return std::make_shared<Marker>(mrk);
 }
 
 int LayerIDProperty::getValue(AE_LTimeMode timeMode, double time,

@@ -32,7 +32,7 @@ class Command
      * Defaults to INSERT_SORTED.
      */
     Command(std::string name, AE_MenuID menuID, int after_item = INSERT_SORTED)
-        : m_name(name), m_commandSuite(CommandSuite1()), m_command(m_commandSuite.getUniqueCommand())
+        : m_name(name), m_commandSuite(CommandSuite1()), m_command(CommandSuite1().getUniqueCommand())
     {
         insertCommand(menuID, after_item);
     }
@@ -118,12 +118,6 @@ class Plugin
            AEGP_GlobalRefcon *global_refconV)
         : m_suiteManager(SuiteManager::GetInstance())
     {
-        int id = static_cast<int>(std::hash<std::string>{}(typeid(*this).name()));
-        AEGP_PluginID myID = id;
-
-        myID = aegp_plugin_id;
-
-        SuiteManager::GetInstance().SetPluginID(&myID);
 
         instance = this;
     }
@@ -194,11 +188,11 @@ class Plugin
                     *handled = TRUE;
                     return A_Err_NONE;
                 }
-                *handled = false;
+    
             }
-            *handled = false;
+           // *handled = false;
         }
-        *handled = false;
+       // *handled = false;
         return A_Err_NONE;
     }
 
@@ -243,22 +237,19 @@ class Plugin
     {
         RegisterSuite5().registerCommandHook(*m_suiteManager.GetPluginID(),
                                              AEGP_Command_ALL,
-                                             Plugin::CommandHook, NULL);
+                                             instance->CommandHook, NULL);
     }
 
     inline void registerUpdateMenuHook()
-    {
-        RegisterSuite5().registerUpdateMenuHook(Plugin::UpdateMenuHook, NULL);
+    { RegisterSuite5().registerUpdateMenuHook(instance->UpdateMenuHook, NULL);
     }
 
     inline void registerDeathHook( )
-    {
-        RegisterSuite5().registerDeathHook(Plugin::DeathHook, NULL);
+    { RegisterSuite5().registerDeathHook(instance->DeathHook, NULL);
     }
 
     inline void registerIdleHook()
-    {
-        RegisterSuite5().registerIdleHook(Plugin::IdleHook, NULL);
+    { RegisterSuite5().registerIdleHook(instance->IdleHook, NULL);
 	}
 
 
@@ -277,13 +268,15 @@ class Plugin
  * @param PluginType The type of the plugin to be created.
  * @brief Macro for defining the plugin's entry point function.
  */
-#define DECLARE_ENTRY(PluginType)                            \
+#define DECLARE_ENTRY(PluginType, pluginID)                            \
     extern "C" DllExport A_Err EntryPointFunc(                                 \
         struct SPBasicSuite *pica_basicP, A_long major_versionL,               \
         A_long minor_versionL, AEGP_PluginID aegp_plugin_id,                   \
         AEGP_GlobalRefcon *global_refconV)                                     \
     {                                                                          \
+        pluginID = aegp_plugin_id;                                             \
         SuiteManager::GetInstance().InitializeSuiteHandler(pica_basicP);       \
+        SuiteManager::GetInstance().SetPluginID(&pluginID);                    \
         return Plugin::EntryPointFunc<PluginType>(                             \
             pica_basicP, major_versionL, minor_versionL, aegp_plugin_id,       \
             global_refconV);                                                   \

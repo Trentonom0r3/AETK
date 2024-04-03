@@ -66,20 +66,6 @@ template <typename T> class Collection
     void SetCollection(std::vector<T> collection) { m_collection = collection; }
 
     /**
-     * \brief Get an iterator pointing to the beginning of the collection.
-     *
-     * \return auto An iterator pointing to the beginning of the collection.
-     */
-   // auto begin() { return m_collection.begin(); }
-
-    /**
-     * \brief Get an iterator pointing to the end of the collection.
-     *
-     * \return auto An iterator pointing to the end of the collection.
-     */
-   // auto end() { return m_collection.end(); }
-
-    /**
      * \brief Get the size of the collection.
      *
      * \return size_t The size of the collection.

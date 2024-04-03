@@ -5,7 +5,7 @@
 
 //    std::shared_ptr<CompItem> baseComp;
 void AE::LayerCollection::append(std::shared_ptr<AE::Item> item) {
-    if (isLayerValid(item->getItem(), baseComp))
+    if (LayerSuite9().IsAddLayerValid(item->getItem(), baseComp))
     {
         return;
     }

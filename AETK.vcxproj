@@ -141,6 +141,7 @@
     <ClInclude Include="aetk\aegp\core\App.hpp" />
     <ClInclude Include="aetk\aegp\core\base\AEGeneral.hpp" />
     <ClInclude Include="aetk\aegp\core\base\Collection.hpp" />
+    <ClInclude Include="AETK\AEGP\Core\Base\guard_ptr.hpp" />
     <ClInclude Include="AETK\AEGP\Core\Base\ItemCollection.hpp" />
     <ClInclude Include="AETK\AEGP\Core\Base\LayerCollection.hpp" />
     <ClInclude Include="AETK\AEGP\Core\Base\Misc.hpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="aetk\aegp\util\Context.hpp" />
     <ClInclude Include="AETK\AEGP\Util\Image.hpp" />
     <ClInclude Include="aetk\aegp\util\Task.hpp" />
+    <ClInclude Include="Util\entry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

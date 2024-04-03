@@ -57,9 +57,9 @@ class AEException : public std::exception
  * @param ptr The pointer to check.
  * @param errorMessage The error message to be associated with the exception.
  */
-template <typename T> void CheckNotNull(const T *ptr, const char *errorMessage)
+template <typename T> void CheckNotNull( T ptr, const char *errorMessage)
 {
-    if (ptr == nullptr)
+    if (&ptr == NULL)
     {
         throw AEException(errorMessage);
     }

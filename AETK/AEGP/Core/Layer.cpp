@@ -5,48 +5,7 @@
 std::shared_ptr<BaseProperty> AE::Layer::getProperty(AE_LayerStream stream)
 {
     auto property = m_streamSuite.GetNewLayerStream(m_layer, stream);
-    AE_StreamGroupingType groupType =
-        m_dynamicStreamSuite.GetStreamGroupingType(property);
-
-    // Check if the stream represents a group and handle accordingly
-    if (groupType == AE_StreamGroupingType::INDEXED_GROUP ||
-        groupType == AE_StreamGroupingType::NAMED_GROUP)
-    {
-        return std::make_shared<PropertyGroup>(property);
-    }
-    else if (groupType == AE_StreamGroupingType::LEAF)
-    {
-        // Proceed with the original logic for individual properties
-        AE_StreamType streamType = m_streamSuite.GetStreamType(property);
-        switch (streamType)
-        {
-        case AE_StreamType::OneD:
-            return std::make_shared<OneDProperty>(property);
-        case AE_StreamType::TwoD:
-        case AE_StreamType::TwoD_SPATIAL:
-            return std::make_shared<TwoDProperty>(property);
-        case AE_StreamType::ThreeD:
-        case AE_StreamType::ThreeD_SPATIAL:
-            return std::make_shared<ThreeDProperty>(property);
-        case AE_StreamType::COLOR:
-            return std::make_shared<ColorProperty>(property);
-        case AE_StreamType::MARKER:
-            return std::make_shared<MarkerProperty>(property);
-        case AE_StreamType::LAYER_ID:
-            return std::make_shared<LayerIDProperty>(property);
-        case AE_StreamType::MASK_ID:
-            return std::make_shared<MaskIDProperty>(property);
-        case AE_StreamType::MASK:
-            return std::make_shared<MaskOutlineProperty>(property);
-        case AE_StreamType::TEXT_DOCUMENT:
-            return std::make_shared<TextDocumentProperty>(property);
-        // Add additional cases as necessary for other property types
-        default:
-            return std::make_shared<BaseProperty>(
-                property); // Fallback for unrecognized or generic properties
-        }
-    }
-    return nullptr;
+    return PropertyFactory::CreateProperty(property);
 }
 
 std::shared_ptr < ThreeDProperty > AE::Layer::Position()
@@ -95,6 +54,12 @@ std::shared_ptr<ThreeDProperty> AE::Layer::AnchorPoint()
 {
 	auto property = getProperty(AE_LayerStream::ROTATE_Z);
 	return std::static_pointer_cast<OneDProperty>(property);
+}
+
+std::shared_ptr<TextDocumentProperty> AE::Layer::Text()
+{
+auto property = getProperty(AE_LayerStream::TEXT);
+	return std::static_pointer_cast<TextDocumentProperty>(property);
 }
 
 std::shared_ptr<MarkerProperty> AE::Layer::Marker()
@@ -315,6 +280,17 @@ double AE::Layer::offset()
 
 void AE::Layer::setOffset(double offset) {
 	m_layerSuite.SetLayerOffset(m_layer, SecondsToTime(offset));
+}
+
+double AE::Layer::inPoint()
+{
+    auto inPoint = m_layerSuite.GetLayerInPoint(m_layer, AE_LTimeMode::CompTime);
+    return TimeToSeconds(inPoint);
+}
+
+void AE::Layer::setInPoint(double inPoint) {
+    m_layerSuite.SetLayerInPointAndDuration(m_layer, AE_LTimeMode::CompTime, SecondsToTime(inPoint),
+                                            LayerSuite9().GetLayerDuration(m_layer, AE_LTimeMode::CompTime));
 }
 
 double AE::Layer::stretch()

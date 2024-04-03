@@ -174,7 +174,7 @@ ItemPtr AssetManager::import(const std::string &filePath,
                                    &AssetManager::sequence(),
                                    AE_InterpretationStyle::NO_DIALOG_NO_GUESS);
     }
-    if (footage)
+    if (footage.get())
     {
         item = suite.addFootageToProject(
             footage, ProjSuite6().GetProjectRootFolder(
@@ -188,7 +188,7 @@ void AssetManager::replaceAsset(const ItemPtr &oldAsset,
 {
     FootageSuite5 suite;
     ItemPtr newFootage = AssetManager::import(newFilePath, "");
-    if (newFootage)
+    if (newFootage.get())
     {
         // suite.replaceItemMainFootage(oldAsset, newFootage);
     }

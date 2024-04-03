@@ -35,7 +35,7 @@ class LayerCollection : public Collection<std::shared_ptr<Layer>>
 {
   public:
     LayerCollection() = default;
-    LayerCollection(CompPtr comp) : baseComp(comp)
+    LayerCollection(CompPtr comp) : baseComp(std::move(comp))
     {
         m_collection = createCollection();
     }

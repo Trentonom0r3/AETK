@@ -14,8 +14,8 @@
 
 #include "AETK/AEGP/Core/Base/AEGeneral.hpp"
 #include "AETK/AEGP/Core/Base/Misc.hpp"
+#include <cmath>  // For std::abs
 #include <limits> // Include this at the top of your file
-#include <cmath> // For std::abs
 
 class Marker;
 class MaskOutline;
@@ -24,7 +24,7 @@ class BaseProperty
 {
   public:
     BaseProperty() : m_property(nullptr){};
-    BaseProperty(StreamRefPtr property) : m_property(property){};
+    BaseProperty(StreamRefPtr property) : m_property(std::move(property)){};
     virtual ~BaseProperty() = default;
 
     virtual AE_StreamType getType() const { return AE_StreamType::NONE; }
@@ -32,35 +32,32 @@ class BaseProperty
     std::string getName() const;
     void setName(const std::string &name);
     StreamRefPtr getStream() const { return m_property; }
-
+    std::shared_ptr<BaseProperty> duplicate();
     std::string matchName() const;
 
     void reOrder(int index);
 
     template <typename T> // should really only be used with Properties, not
                           // PropertyGroups
-    T getValue(AE_LTimeMode = AE_LTimeMode::CompTime, double time = 0.0,
-               bool preExpression = TRUE) const;
+    T getValue(AE_LTimeMode = AE_LTimeMode::CompTime, double time = 0.0, bool preExpression = TRUE) const;
 
     template <typename T> // should really only be used with Properties, not
                           // PropertyGroups
     void setValue(T value);
 
-    virtual std::shared_ptr<BaseProperty> getProperty(const std::string &name)
-        const; // should really only be used with PropertyGroups
-    virtual std::shared_ptr<BaseProperty> getProperty(
-        int index) const; // should really only be used with PropertyGroups
+    virtual std::shared_ptr<BaseProperty>
+    getProperty(const std::string &name) const; // should really only be used with PropertyGroups
+    virtual std::shared_ptr<BaseProperty>
+    getProperty(int index) const; // should really only be used with PropertyGroups
 
-    virtual void addProperty(const std::string &name)
-        const; // should really only be used with PropertyGroups
+    virtual void addProperty(const std::string &name) const; // should really only be used with PropertyGroups
 
-    virtual void removeProperty(const std::string &name)
-        const; // should really only be used with PropertyGroups
+    virtual void removeProperty(const std::string &name) const; // should really only be used with PropertyGroups
 
-    virtual void removeProperty(
-        int index) const; // should really only be used with PropertyGroups
+    virtual void removeProperty(int index) const; // should really only be used with PropertyGroups
 
-    inline int numKeys() const {
+    inline int numKeys() const
+    {
         int numKeys = KeyframeSuite5().GetStreamNumKFs(m_property);
         return numKeys;
     }
@@ -73,27 +70,23 @@ class BaseProperty
             throw std::out_of_range("Keyframe index out of range");
         }
         auto keyIndex = index;
-        auto time = TimeToSeconds(KeyframeSuite5().GetKeyframeTime(
-            m_property, keyIndex, AE_LTimeMode::CompTime));
+        auto time = TimeToSeconds(KeyframeSuite5().GetKeyframeTime(m_property, keyIndex, AE_LTimeMode::CompTime));
         auto value = KeyframeSuite5().GetNewKeyframeValue(m_property, keyIndex);
         auto flags = KeyframeSuite5().GetKeyframeFlags(m_property, keyIndex);
-        auto interp =
-            KeyframeSuite5().GetKeyframeInterpolation(m_property, keyIndex);
+        auto interp = KeyframeSuite5().GetKeyframeInterpolation(m_property, keyIndex);
         auto inInterp = std::get<0>(interp);
         auto outInterp = std::get<1>(interp);
-        auto tangents = KeyframeSuite5().GetNewKeyframeSpatialTangents(
-            m_property, keyIndex);
+        auto tangents = KeyframeSuite5().GetNewKeyframeSpatialTangents(m_property, keyIndex);
         auto inTan = std::get<0>(tangents);
         auto outTan = std::get<1>(tangents);
-        auto ease =
-            KeyframeSuite5().GetKeyframeTemporalEase(m_property, keyIndex, 0);
+        auto ease = KeyframeSuite5().GetKeyframeTemporalEase(m_property, keyIndex, 0);
         auto inEase = std::get<0>(ease);
         auto outEase = std::get<1>(ease);
         KeyFrame config(time);
         config.setValue(convertToTangentValue(value));
         config.setFlag(flags);
         config.interp = std::make_pair(inInterp, outInterp);
-		config.easeIn = inEase;
+        config.easeIn = inEase;
         config.easeOut = outEase;
         config.tangents = std::make_pair(convertToTangentValue(inTan), convertToTangentValue(outTan));
 
@@ -119,8 +112,7 @@ class BaseProperty
         int keyNum = KeyframeSuite5().GetStreamNumKFs(m_property);
         for (int i = 0; i < keyNum; i++)
         {
-            auto keyTime = TimeToSeconds(KeyframeSuite5().GetKeyframeTime(
-                m_property, i, AE_LTimeMode::CompTime));
+            auto keyTime = TimeToSeconds(KeyframeSuite5().GetKeyframeTime(m_property, i, AE_LTimeMode::CompTime));
             double timeDifference = std::abs(keyTime - time);
 
             if (timeDifference < nearestTimeDifference)
@@ -140,14 +132,11 @@ class BaseProperty
         }
     }
 
-
     inline void addKey(const KeyFrame &keyframe) // Adds Keyframe to the property
     {
         auto akH = KeyframeSuite5().StartAddKeyframes(m_property);
-        auto keyIndex = KeyframeSuite5().AddKeyframes(
-            akH, AE_LTimeMode::CompTime, SecondsToTime(keyframe.time));
-        KeyframeSuite5().SetAddKeyframe(akH, keyIndex,
-                                        convertToAEValue(keyframe.value));
+        auto keyIndex = KeyframeSuite5().AddKeyframes(akH, AE_LTimeMode::CompTime, SecondsToTime(keyframe.time));
+        KeyframeSuite5().SetAddKeyframe(akH, keyIndex, convertToAEValue(keyframe.value));
         setKeyFlags(keyIndex, keyframe.flags);
         // Check if interpolation is specified and apply it
         if (keyframe.interp.has_value())
@@ -174,9 +163,9 @@ class BaseProperty
         if (keyframe.tangents.has_value())
         {
             auto [inTan, outTan] = keyframe.tangents.value();
-            setKeySpatialTangents(keyIndex, convertToAEValue(inTan),
-                                  convertToAEValue(outTan));
+            setKeySpatialTangents(keyIndex, convertToAEValue(inTan), convertToAEValue(outTan));
         }
+        KeyframeSuite5().EndAddKeyframes(akH);
     };
 
     inline void addKeys(const std::vector<KeyFrame> &keyframes) // Adds multiple keyframes to the property
@@ -184,10 +173,8 @@ class BaseProperty
         auto akH = KeyframeSuite5().StartAddKeyframes(m_property);
         for (const auto &keyframe : keyframes)
         {
-            auto keyIndex = KeyframeSuite5().AddKeyframes(
-                akH, AE_LTimeMode::CompTime, SecondsToTime(keyframe.time));
-            KeyframeSuite5().SetAddKeyframe(akH, keyIndex,
-                                            convertToAEValue(keyframe.value));
+            auto keyIndex = KeyframeSuite5().AddKeyframes(akH, AE_LTimeMode::CompTime, SecondsToTime(keyframe.time));
+            KeyframeSuite5().SetAddKeyframe(akH, keyIndex, convertToAEValue(keyframe.value));
             setKeyFlags(keyIndex, keyframe.flags);
 
             // Check if interpolation is specified and apply it
@@ -215,15 +202,14 @@ class BaseProperty
             if (keyframe.tangents.has_value())
             {
                 auto [inTan, outTan] = keyframe.tangents.value();
-                setKeySpatialTangents(keyIndex, convertToAEValue(inTan),
-                                      convertToAEValue(outTan));
+                setKeySpatialTangents(keyIndex, convertToAEValue(inTan), convertToAEValue(outTan));
             }
         }
+        KeyframeSuite5().EndAddKeyframes(akH);
     }
 
   protected:
-    inline void setKeyFlags(AEGP_KeyframeIndex keyIndex,
-                            std::vector<AE_KeyframeFlag> flags)
+    inline void setKeyFlags(AEGP_KeyframeIndex keyIndex, std::vector<AE_KeyframeFlag> flags)
     {
         for (auto flag : flags)
         {
@@ -231,48 +217,32 @@ class BaseProperty
         }
     }
 
-    inline void setKeyInterpolation(AEGP_KeyframeIndex keyIndex,
-                                    AE_KeyInterp inInterp,
-                                    AE_KeyInterp outInterp)
+    inline void setKeyInterpolation(AEGP_KeyframeIndex keyIndex, AE_KeyInterp inInterp, AE_KeyInterp outInterp)
     {
-        KeyframeSuite5().SetKeyframeInterpolation(m_property, keyIndex,
-                                                  inInterp, outInterp);
+        KeyframeSuite5().SetKeyframeInterpolation(m_property, keyIndex, inInterp, outInterp);
     }
 
-    inline void setKeyTemporalEase(AEGP_KeyframeIndex keyIndex,
-                                   A_long dimension, AE_KeyframeEase inEase,
+    inline void setKeyTemporalEase(AEGP_KeyframeIndex keyIndex, A_long dimension, AE_KeyframeEase inEase,
                                    AE_KeyframeEase outEase)
     {
         KeyframeSuite5().SetKeyframeTemporalEase(
-            m_property, keyIndex,
-            KeyframeSuite5().GetStreamTemporalDimensionality(m_property), inEase,
-            outEase);
+            m_property, keyIndex, KeyframeSuite5().GetStreamTemporalDimensionality(m_property), inEase, outEase);
     }
 
-    inline void setKeySpatialTangents(AEGP_KeyframeIndex keyIndex,
-                                      AEGP_StreamValue2 inTan,
-                                      AEGP_StreamValue2 outTan)
+    inline void setKeySpatialTangents(AEGP_KeyframeIndex keyIndex, AEGP_StreamValue2 inTan, AEGP_StreamValue2 outTan)
     {
-        KeyframeSuite5().SetKeyframeSpatialTangents(m_property, keyIndex, inTan,
-                                                    outTan);
+        KeyframeSuite5().SetKeyframeSpatialTangents(m_property, keyIndex, inTan, outTan);
     }
 
-    inline AEGP_StreamValue2
-    convertToAEValue(const KeyFrame::TangentValue &value)
+    inline AEGP_StreamValue2 convertToAEValue(const KeyFrame::TangentValue &value)
     {
         AEGP_StreamValue2 aeValue;
         aeValue.streamH = *m_property.get();
         std::visit(overloaded{
                        [&](double val) { aeValue.val.one_d = val; },
-                       [&](const TwoDVal &val) {
-                           aeValue.val.two_d = toAEGP_TwoDVal(val);
-                       },
-                       [&](const ThreeDVal &val) {
-                           aeValue.val.three_d = toAEGP_ThreeDVal(val);
-                       },
-                       [&](const ColorVal &val) {
-                           aeValue.val.color = toAEGP_ColorVal(val);
-                       },
+                       [&](const TwoDVal &val) { aeValue.val.two_d = toAEGP_TwoDVal(val); },
+                       [&](const ThreeDVal &val) { aeValue.val.three_d = toAEGP_ThreeDVal(val); },
+                       [&](const ColorVal &val) { aeValue.val.color = toAEGP_ColorVal(val); },
                        [&](std::monostate) {} // Do nothing for std::monostate
                    },
                    value);
@@ -311,10 +281,9 @@ class OneDProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::OneD; }
 
-    double getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                    double time = 0.0, bool preExpression = TRUE)
-        const; // returns the value of the property at the given time
-    void setValue(double value); // sets the value of the property
+    double getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                    bool preExpression = TRUE) const; // returns the value of the property at the given time
+    void setValue(double value);                      // sets the value of the property
 };
 
 class TwoDProperty : public BaseProperty
@@ -324,15 +293,11 @@ class TwoDProperty : public BaseProperty
     TwoDProperty(StreamRefPtr property) : BaseProperty(property) {}
     ~TwoDProperty() = default;
 
-    AE_StreamType getType() const override
-    {
-        return AE_StreamType::TwoD;
-    } // returns the type of the property
+    AE_StreamType getType() const override { return AE_StreamType::TwoD; } // returns the type of the property
 
-    TwoDVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                     double time = 0.0, bool preExpression = TRUE)
-        const; // returns the value of the property at the given time
-    void setValue(TwoDVal value); // sets the value of the property
+    TwoDVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                     bool preExpression = TRUE) const; // returns the value of the property at the given time
+    void setValue(TwoDVal value);                      // sets the value of the property
 };
 
 class ThreeDProperty : public BaseProperty
@@ -344,8 +309,8 @@ class ThreeDProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::ThreeD; }
 
-    ThreeDVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                       double time = 0.0, bool preExpression = TRUE) const;
+    ThreeDVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                       bool preExpression = TRUE) const;
     void setValue(ThreeDVal value);
 };
 
@@ -358,8 +323,8 @@ class ColorProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::COLOR; }
 
-    ColorVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                      double time = 0.0, bool preExpression = TRUE) const;
+    ColorVal getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                      bool preExpression = TRUE) const;
     void setValue(ColorVal value);
 };
 
@@ -372,9 +337,10 @@ class MarkerProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::MARKER; }
 
-    std::shared_ptr<Marker>
-    getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
-             bool preExpression = TRUE) const;
+    std::shared_ptr<Marker> getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                                     bool preExpression = TRUE) const;
+
+    std::shared_ptr<Marker> addMarker(double time);
 };
 
 class LayerIDProperty : public BaseProperty
@@ -386,8 +352,7 @@ class LayerIDProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::LAYER_ID; }
 
-    int getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                 double time = 0.0, bool preExpression = TRUE) const;
+    int getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0, bool preExpression = TRUE) const;
 };
 
 class MaskIDProperty : public BaseProperty
@@ -399,8 +364,7 @@ class MaskIDProperty : public BaseProperty
 
     AE_StreamType getType() const override { return AE_StreamType::MASK_ID; }
 
-    int getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime,
-                 double time = 0.0, bool preExpression = TRUE) const;
+    int getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0, bool preExpression = TRUE) const;
 };
 
 class MaskOutlineProperty : public BaseProperty // maskOutlineValPtr
@@ -412,9 +376,8 @@ class MaskOutlineProperty : public BaseProperty // maskOutlineValPtr
 
     AE_StreamType getType() const override { return AE_StreamType::MASK; }
 
-    std::shared_ptr<MaskOutline>
-    getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
-             bool preExpression = TRUE) const;
+    std::shared_ptr<MaskOutline> getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                                          bool preExpression = TRUE) const;
 };
 
 class TextDocumentProperty : public BaseProperty
@@ -424,14 +387,10 @@ class TextDocumentProperty : public BaseProperty
     TextDocumentProperty(StreamRefPtr property) : BaseProperty(property) {}
     ~TextDocumentProperty() = default;
 
-    AE_StreamType getType() const override
-    {
-        return AE_StreamType::TEXT_DOCUMENT;
-    }
+    AE_StreamType getType() const override { return AE_StreamType::TEXT_DOCUMENT; }
 
-    std::shared_ptr<TextDocument>
-    getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
-             bool preExpression = TRUE) const;
+    std::shared_ptr<TextDocument> getValue(AE_LTimeMode timeMode = AE_LTimeMode::CompTime, double time = 0.0,
+                                           bool preExpression = TRUE) const;
 };
 
 class PropertyGroup : public BaseProperty
@@ -441,25 +400,65 @@ class PropertyGroup : public BaseProperty
     PropertyGroup(StreamRefPtr property) : BaseProperty(property) {}
     ~PropertyGroup() = default;
 
-    AE_StreamType getType() const override
-    {
-        return AE_StreamType::NONE;
-    } // may need to change this
+    AE_StreamType getType() const override { return AE_StreamType::NONE; } // may need to change this
 
     int getNumProperties() const;
 
-    std::shared_ptr<BaseProperty>
-    getProperty(const std::string &name) const override;
+    std::shared_ptr<BaseProperty> getProperty(const std::string &name) const override;
     std::shared_ptr<BaseProperty> getProperty(int index) const override;
 
-    template <typename EnumType>
-    std::shared_ptr<BaseProperty> getProperty(EnumType index) const;
+    template <typename EnumType> std::shared_ptr<BaseProperty> getProperty(EnumType index) const;
 
     void addProperty(const std::string &name) const override;
 
     void removeProperty(const std::string &name) const override;
 
     void removeProperty(int index) const override;
+};
+
+class PropertyFactory
+{
+  public:
+    static std::shared_ptr<BaseProperty> CreateProperty(StreamRefPtr property)
+    {
+ 
+        AE_StreamGroupingType groupType = DynamicStreamSuite4().GetStreamGroupingType(property);
+        if (groupType == AE_StreamGroupingType::INDEXED_GROUP || groupType == AE_StreamGroupingType::NAMED_GROUP)
+        {
+            return std::make_shared<PropertyGroup>(property);
+        }
+        else if (groupType == AE_StreamGroupingType::LEAF)
+        {
+            AE_StreamType streamType = StreamSuite6().GetStreamType(property);
+            switch (streamType)
+            {
+            case AE_StreamType::OneD:
+                return std::make_shared<OneDProperty>(property);
+            case AE_StreamType::TwoD:
+            case AE_StreamType::TwoD_SPATIAL:
+                return std::make_shared<TwoDProperty>(property);
+            case AE_StreamType::ThreeD:
+            case AE_StreamType::ThreeD_SPATIAL:
+                return std::make_shared<ThreeDProperty>(property);
+            case AE_StreamType::COLOR:
+                return std::make_shared<ColorProperty>(property);
+            case AE_StreamType::MARKER:
+                return std::make_shared<MarkerProperty>(property);
+            case AE_StreamType::LAYER_ID:
+                return std::make_shared<LayerIDProperty>(property);
+            case AE_StreamType::MASK_ID:
+                return std::make_shared<MaskIDProperty>(property);
+            case AE_StreamType::MASK:
+                return std::make_shared<MaskOutlineProperty>(property);
+            case AE_StreamType::TEXT_DOCUMENT:
+                return std::make_shared<TextDocumentProperty>(property);
+            // Add additional cases as necessary for other property types
+            default:
+                return std::make_shared<BaseProperty>(property); // Fallback for unrecognized or generic properties
+            }
+        }
+        return nullptr; // Return nullptr if no suitable type found
+    }
 };
 
 #endif // PROPERTY_HPP

@@ -105,6 +105,7 @@ class Layer : public PropertyGroup
     std::shared_ptr<OneDProperty> RotationX();
     std::shared_ptr<OneDProperty> RotationY();
     std::shared_ptr<OneDProperty> RotationZ();
+    std::shared_ptr<TextDocumentProperty> Text();
 
   protected:
     LayerPtr m_layer;

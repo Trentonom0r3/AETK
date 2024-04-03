@@ -149,5 +149,11 @@
     <ClInclude Include="AETK\AEGP\Core\Base\LayerCollection.hpp">
       <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
     </ClInclude>
+    <ClInclude Include="Util\entry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AETK\AEGP\Core\Base\guard_ptr.hpp">
+      <Filter>Header Files\AETK\AEGP\Core\Base</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

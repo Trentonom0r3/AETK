@@ -1,22 +1,18 @@
-/*****************************************************************/ /**
-                                                                     * \file
-                                                                     *AEGeneral.hpp
-                                                                     * \brief
-                                                                     *General
-                                                                     *functions
-                                                                     *and types
-                                                                     *for After
-                                                                     *Effects
-                                                                     *SDK, built
-                                                                     *by
-                                                                     *wrapping
-                                                                     * AE_GeneralPlug.h
-                                                                     *
-                                                                     * \author
-                                                                     *tjerf
-                                                                     * \date
-                                                                     *March 2024
-                                                                     *********************************************************************/
+/*****************************************************************//**
+ * \file   AEGeneral.hpp
+ * \brief  General functions and utilities for After Effects SDK.
+ * This File provides various utilities modernizing the After Effects SDK.
+ * This is the lowest level of wrappers provided in this library.
+ * All AE Types are wrapped in shared pointers with custom deleters (where necessary)
+ * and all suites align with the AE SDK naming conventions.
+ * 
+ * For more detailed info, please refer to the After Effects SDK documentation.
+ * For higher level abstractions, documentation is provided in the respective header files.
+ * 
+ * \author tjerf
+ * \date   March 2024
+ *********************************************************************/
+
 #ifndef AE_MAIN_HPP
 #define AE_MAIN_HPP
 #define NOMINMAX
@@ -30,7 +26,7 @@
 #include "AETK/AEGP/Exception/Exception.hpp"
 #include "Headers/AE_GeneralPlug.h"
 #include "Util/entry.h"
-
+#include <unicode/unistr.h>
 #include <any>
 #include <functional>
 #include <future>
@@ -43,15 +39,16 @@
 #include <sstream> // For std::ostringstream
 #include <string>
 #include <tuple>
-#include <unicode/unistr.h>
 #include <unordered_map>
 #include <variant>
 #include <vector>
+
 template <class... Ts> struct overloaded : Ts...
 {
     using Ts::operator()...;
 };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 double TimeToSeconds(
     const A_Time &time); // Will find active comp and convert using frame rate
 A_Time SecondsToTime(double seconds);
@@ -98,8 +95,13 @@ inline std::string GetErrorMessage(int errorCode)
                "a critical error.";
     default:
         // Handle reserved errors generically, as specifics are unknown
+        /**  A_Err_MISSING_SUITE = 13 */
         if (errorCode >= A_Err_RESERVED_7 && errorCode <= A_Err_RESERVED_21)
         {
+            if (errorCode == A_Err_MISSING_SUITE)
+            {
+				return "Missing suite error: Failed to acquire a required suite.";
+			}
             return "Reserved error: An unspecified error occurred. Please "
                    "consult "
                    "the documentation or contact support.";
@@ -124,6 +126,33 @@ inline std::string GetErrorMessage(int errorCode)
         }                                                                      \
     } while (0)
 
+class WorldPtr
+{
+  public:
+    WorldPtr(AEGP_WorldH &world) : m_world(std::make_shared<AEGP_WorldH>(world)) {}
+
+    AEGP_WorldH get() const { return *m_world; }
+
+    void set(AEGP_WorldH world) { m_world = std::make_shared<AEGP_WorldH>(world); }
+
+    void setUserAllocated(bool userAllocated) { this->userAllocated = userAllocated; }
+
+    ~WorldPtr()
+    {
+        if (userAllocated)
+		{
+			SuiteManager::GetInstance()
+				.GetSuiteHandler()
+				.WorldSuite3()
+				->AEGP_Dispose(*m_world.get());
+		}
+    }
+    private:
+  std::shared_ptr<AEGP_WorldH> m_world;
+  bool userAllocated = false;
+
+};
+
 /**
  * @brief Define shared pointers for After Effects SDK types
  *
@@ -144,7 +173,7 @@ typedef std::shared_ptr<AEGP_Collection2H> Collection2Ptr;
 typedef std::shared_ptr<AEGP_SoundDataH> SoundDataPtr;
 typedef std::shared_ptr<AEGP_AddKeyframesInfoH> AddKeyframesInfoPtr;
 typedef std::shared_ptr<AEGP_RenderReceiptH> RenderReceiptPtr;
-typedef std::shared_ptr<AEGP_WorldH> WorldPtr;
+//typedef std::shared_ptr<AEGP_WorldH> WorldPtr;
 typedef std::shared_ptr<AEGP_RenderOptionsH> RenderOptionsPtr;
 typedef std::shared_ptr<AEGP_LayerRenderOptionsH> LayerRenderOptionsPtr;
 typedef std::shared_ptr<AEGP_FrameReceiptH> FrameReceiptPtr;
@@ -1454,7 +1483,7 @@ enum class AE_LayerStream
     ROTATE_X = AEGP_LayerStream_ROTATE_X,
     ROTATE_Y = AEGP_LayerStream_ROTATE_Y,
     ORIENTATION = AEGP_LayerStream_ORIENTATION,
-
+    TEXT = AEGP_LayerStream_SOURCE_TEXT,
     // only valid for AEGP_ObjectType == AEGP_ObjectType_CAMERA
     ZOOM = AEGP_LayerStream_ZOOM,
     DEPTH_OF_FIELD = AEGP_LayerStream_DEPTH_OF_FIELD,
@@ -1810,6 +1839,7 @@ class KeyframeSuite5
                                     const A_Time &time); /* Add Keyframes.*/
     void SetAddKeyframe(AddKeyframesInfoPtr akH, AEGP_KeyframeIndex keyIndex,
                         AEGP_StreamValue2 value); /* Set Add Keyframe.*/
+    void EndAddKeyframes(AddKeyframesInfoPtr akH); /* End Add Keyframes.*/
     A_long GetKeyframeLabelColorIndex(
         StreamRefPtr stream,
         AEGP_KeyframeIndex keyIndex); /* Get Keyframe Label Color Index.*/
@@ -2626,10 +2656,8 @@ class WorldSuite3
                                       A_long heightL);
     WorldPtr newReferenceFromPlatformWorld(PlatformWorldPtr platform_worldH);
 
-    static inline WorldPtr createPtr(AEGP_WorldH ref)
-    {
-        return std::shared_ptr<AEGP_WorldH>(new AEGP_WorldH(ref),
-                                            WorldDeleter());
+    static inline WorldPtr createPtr(AEGP_WorldH ref) { 
+        return WorldPtr(ref);
     }
     static inline PlatformWorldPtr createPlatformPtr(AEGP_PlatformWorldH ref)
     {

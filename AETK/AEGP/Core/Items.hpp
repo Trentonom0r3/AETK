@@ -39,7 +39,7 @@ class LayerCollection;
 class Item
 {
   public:
-    Item() : m_item(nullptr), m_itemSuite(ItemSuite9()) {}
+    Item() : m_item(ItemPtr()), m_itemSuite(ItemSuite9()) {}
     Item(ItemPtr item) : m_item(item), m_itemSuite(ItemSuite9()) {}
     virtual ~Item() = default;
 
@@ -55,8 +55,14 @@ class Item
     void setSelection(bool select, bool deselectOthers = false); // Selects or deselects the item
     // TODO Implement Tis
 
-    bool isFlagSet(AE_ItemFlag flag); // Returns true if the flag is set
-    void setFlag(AE_ItemFlag flag, bool value); // Sets or unsets the flag
+    bool Missing();
+    bool HasProxy();
+    bool UsingProxy();
+    bool MissingProxy();
+    bool HasVideo();
+    bool HasAudio();
+    bool Still();
+    bool HasActiveAudio();
 
     std::string name(); // Returns the name of the item
     void setName(const std::string &name); // Sets the name of the item
