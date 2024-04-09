@@ -26,14 +26,8 @@
 	created 9/11/2000 jms
 **/
 
-
 #include <AEGP_SuiteHandler.h>
 #include <AE_Macros.h>
-
-void AEGP_SuiteHandler::MissingSuiteError() const
-{
-	throw std::exception("AEGP_SuiteHandler: Missing Suite");
-}
 
 AEGP_SuiteHandler::AEGP_SuiteHandler(const SPBasicSuite *pica_basicP) :
 	i_pica_basicP(pica_basicP)

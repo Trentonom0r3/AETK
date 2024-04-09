@@ -13,7 +13,7 @@
 #ifndef PLUGIN_HPP
 #define PLUGIN_HPP
 
-#include "AETK/AEGP/Core/Base/AEGeneral.hpp"
+#include "AETK/AEGP/Core/Core.hpp"
 /**
  * @class Command
  * @brief Abstract base class for creating commands within the plugin.
@@ -31,8 +31,8 @@ class Command
      * @param after_item Specifies the order of the command within the menu.
      * Defaults to INSERT_SORTED.
      */
-    Command(std::string name, AE_MenuID menuID, int after_item = INSERT_SORTED)
-        : m_name(name), m_commandSuite(CommandSuite1()), m_command(CommandSuite1().getUniqueCommand())
+    Command(std::string name, MenuID menuID, int after_item = AEGP_MENU_INSERT_SORTED)
+        : m_name(name), m_commandSuite(CommandSuite()), m_command(CommandSuite().getUniqueCommand())
     {
         insertCommand(menuID, after_item);
     }
@@ -49,7 +49,7 @@ class Command
     /**
      * Updates the state or appearance of the menu item associated with this
      * command. Must be implemented by derived classes.
-     * 
+     *
      * This is used in the updateMenuHook to update the state of the menu item.
      * Use the helper functions to enable, disable, or check the menu item.
      */
@@ -66,15 +66,11 @@ class Command
     int getCommand() const { return m_command; }
 
     // Helper functions for command manipulation.
-    inline void insertCommand(AE_MenuID menuID, int after_item = INSERT_SORTED)
+    inline void insertCommand(MenuID menuID, int after_item = AEGP_MENU_INSERT_SORTED)
     {
-        m_commandSuite.insertMenuCommand(m_command, m_name.c_str(), menuID,
-                                         after_item);
+        m_commandSuite.insertMenuCommand(m_command, m_name.c_str(), menuID, after_item);
     }
-    inline void setCommandName(std::string name)
-    {
-        m_commandSuite.setMenuCommandName(m_command, name.c_str());
-    }
+    inline void setCommandName(std::string name) { m_commandSuite.setMenuCommandName(m_command, name.c_str()); }
     inline void enableCommand(bool enable)
     {
         if (enable)
@@ -87,16 +83,12 @@ class Command
         }
     }
 
-    inline void checkCommand(bool check)
-    {
-        m_commandSuite.checkMarkMenuCommand(m_command, check);
-    }
+    inline void checkCommand(bool check) { m_commandSuite.checkMarkMenuCommand(m_command, check); }
 
   private:
-    std::string m_name; ///< The command's name.
-    int m_command;      ///< The command's unique identifier.
-    CommandSuite1
-        m_commandSuite; ///< Suite for command operations provided by AE SDK.
+    std::string m_name;           ///< The command's name.
+    int m_command;                ///< The command's unique identifier.
+    CommandSuite m_commandSuite; ///< Suite for command operations provided by AE SDK.
 };
 
 /**
@@ -105,7 +97,7 @@ class Command
  *
  * This class serves as the central management point for the plugin, handling
  * initialization, command registration, and event hooks.
- * 
+ *
  * AE Refcons are ignored, as you can use maps to store data instead.
  */
 class Plugin
@@ -128,34 +120,31 @@ class Plugin
 
     // Lifecycle event handlers to be implemented by derived classes.//
     /**
-    * @brief onInit Initializes the plugin and its commands.
+     * @brief onInit Initializes the plugin and its commands.
      * Initializes the plugin and its commands.
      * Here, you will add commands to the plugin's command list, and then use the utility functions
      * to register your command hooks (if any).
      */
-    virtual void onInit() = 0; 
+    virtual void onInit() = 0;
 
     /**
-	 * Called when the plugin is being unloaded.
-	 * This will automatically clean up commands, its up to you to clean up anything else you need to.
-	 */
+     * Called when the plugin is being unloaded.
+     * This will automatically clean up commands, its up to you to clean up anything else you need to.
+     */
     virtual void onDeath() = 0;
 
     /**
-	 * Called when the plugin is idle.
-	 * This is a good place to do any background processing or updating of the UI.
-	 * This is also where you would utilize the TaskManager to do background processing.
-	 */
+     * Called when the plugin is idle.
+     * This is a good place to do any background processing or updating of the UI.
+     * This is also where you would utilize the TaskManager to do background processing.
+     */
     virtual void onIdle() = 0;
 
     /**
      * Adds a command to the plugin's command list.
      * @param command A unique pointer to the Command object.
      */
-    inline void addCommand(std::unique_ptr<Command> command)
-    {
-        m_commands.push_back(std::move(command));
-    }
+    inline void addCommand(std::unique_ptr<Command> command) { m_commands.push_back(std::move(command)); }
 
     template <typename T>
     static A_Err EntryPointFunc(struct SPBasicSuite *pica_basicP,  /* >> */
@@ -171,11 +160,8 @@ class Plugin
 
     // Static hook methods for Adobe After Effects to invoke.   // Static hook
     // methods for Adobe After Effects to invoke.
-    inline static A_Err CommandHook(AEGP_GlobalRefcon global_refcon,
-                                    AEGP_CommandRefcon command_refcon,
-                                    AEGP_Command command,
-                                    AEGP_HookPriority hook_priority,
-                                    A_Boolean already_handled,
+    inline static A_Err CommandHook(AEGP_GlobalRefcon global_refcon, AEGP_CommandRefcon command_refcon,
+                                    AEGP_Command command, AEGP_HookPriority hook_priority, A_Boolean already_handled,
                                     A_Boolean *handled)
     {
         if (instance)
@@ -188,16 +174,14 @@ class Plugin
                     *handled = TRUE;
                     return A_Err_NONE;
                 }
-    
             }
-           // *handled = false;
+            // *handled = false;
         }
-       // *handled = false;
+        // *handled = false;
         return A_Err_NONE;
     }
 
-    inline static A_Err UpdateMenuHook(AEGP_GlobalRefcon global_refcon,
-                                       AEGP_UpdateMenuRefcon update_menu_refcon,
+    inline static A_Err UpdateMenuHook(AEGP_GlobalRefcon global_refcon, AEGP_UpdateMenuRefcon update_menu_refcon,
                                        AEGP_WindowType active_window)
     {
         if (instance)
@@ -210,8 +194,7 @@ class Plugin
         return A_Err_NONE;
     }
 
-    inline static A_Err DeathHook(AEGP_GlobalRefcon global_refcon,
-                                  AEGP_DeathRefcon death_refcon)
+    inline static A_Err DeathHook(AEGP_GlobalRefcon global_refcon, AEGP_DeathRefcon death_refcon)
     {
         if (instance)
         {
@@ -220,9 +203,7 @@ class Plugin
         return A_Err_NONE;
     }
 
-    inline static A_Err IdleHook(AEGP_GlobalRefcon global_refcon,
-                                 AEGP_IdleRefcon idle_refcon,
-                                 A_long *max_sleepPL)
+    inline static A_Err IdleHook(AEGP_GlobalRefcon global_refcon, AEGP_IdleRefcon idle_refcon, A_long *max_sleepPL)
     {
         if (instance)
         {
@@ -235,31 +216,21 @@ class Plugin
     // SDK.
     inline void registerCommandHook()
     {
-        RegisterSuite5().registerCommandHook(*m_suiteManager.GetPluginID(),
-                                             AEGP_Command_ALL,
-                                             instance->CommandHook, NULL);
+        RegisterSuite().registerCommandHook(*m_suiteManager.GetPluginID(), AEGP_Command_ALL, instance->CommandHook,
+                                             NULL);
     }
 
-    inline void registerUpdateMenuHook()
-    { RegisterSuite5().registerUpdateMenuHook(instance->UpdateMenuHook, NULL);
-    }
+    inline void registerUpdateMenuHook() { RegisterSuite().registerUpdateMenuHook(instance->UpdateMenuHook, NULL); }
 
-    inline void registerDeathHook( )
-    { RegisterSuite5().registerDeathHook(instance->DeathHook, NULL);
-    }
+    inline void registerDeathHook() { RegisterSuite().registerDeathHook(instance->DeathHook, NULL); }
 
-    inline void registerIdleHook()
-    { RegisterSuite5().registerIdleHook(instance->IdleHook, NULL);
-	}
-
+    inline void registerIdleHook() { RegisterSuite().registerIdleHook(instance->IdleHook, NULL); }
 
   private:
     SuiteManager &m_suiteManager;
-    std::vector<std::unique_ptr<Command>> m_commands; //use std, depending on preprocessor directives, will be either std:: or AE:: (custom allocated and owned by AE)
-    inline void clearCommands()
-	{
-		m_commands.clear();
-	}
+    std::vector<std::unique_ptr<Command>> m_commands; // use std, depending on preprocessor directives, will be either
+                                                      // std:: or AE:: (custom allocated and owned by AE)
+    inline void clearCommands() { m_commands.clear(); }
 };
 
 // Define a macro for setting up the plugin's entry point function.
@@ -268,19 +239,16 @@ class Plugin
  * @param PluginType The type of the plugin to be created.
  * @brief Macro for defining the plugin's entry point function.
  */
-#define DECLARE_ENTRY(PluginType, pluginID)                            \
-    extern "C" DllExport A_Err EntryPointFunc(                                 \
-        struct SPBasicSuite *pica_basicP, A_long major_versionL,               \
-        A_long minor_versionL, AEGP_PluginID aegp_plugin_id,                   \
-        AEGP_GlobalRefcon *global_refconV)                                     \
-    {                                                                          \
-        pluginID = aegp_plugin_id;                                             \
-        SuiteManager::GetInstance().InitializeSuiteHandler(pica_basicP);       \
-        SuiteManager::GetInstance().SetPluginID(&pluginID);                    \
-        return Plugin::EntryPointFunc<PluginType>(                             \
-            pica_basicP, major_versionL, minor_versionL, aegp_plugin_id,       \
-            global_refconV);                                                   \
+#define DECLARE_ENTRY(PluginType, pluginID)                                                                            \
+    extern "C" DllExport A_Err EntryPointFunc(struct SPBasicSuite *pica_basicP, A_long major_versionL,                 \
+                                              A_long minor_versionL, AEGP_PluginID aegp_plugin_id,                     \
+                                              AEGP_GlobalRefcon *global_refconV)                                       \
+    {                                                                                                                  \
+        pluginID = aegp_plugin_id;                                                                                     \
+        SuiteManager::GetInstance().InitializeSuiteHandler(pica_basicP);                                               \
+        SuiteManager::GetInstance().SetPluginID(&pluginID);                                                            \
+        return Plugin::EntryPointFunc<PluginType>(pica_basicP, major_versionL, minor_versionL, aegp_plugin_id,         \
+                                                  global_refconV);                                                     \
     }
-
 
 #endif /* PLUGIN_HPP */

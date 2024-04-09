@@ -1,19 +1,19 @@
-/*****************************************************************//**
- * \file   Image.hpp
- * \brief  A class for handling images
- * 
- * \author tjerf
- * \date   March 2024
- *********************************************************************/
+/*****************************************************************/ /**
+                                                                     * \file   Image.hpp
+                                                                     * \brief  A class for handling images
+                                                                     *
+                                                                     * \author tjerf
+                                                                     * \date   March 2024
+                                                                     *********************************************************************/
 
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <stb_image_write.h>
 
-
-#include "AETK/AEGP/Core/Base/AEGeneral.hpp"
+#include "AETK/AEGP/Core/Core.hpp"
 
 // Include library headers conditionally
 #ifdef USE_OPENCV
@@ -23,8 +23,6 @@
 #ifdef USE_IMAGEMAGICK
 #include <Magick++.h>
 #endif
-
-
 
 struct UniformImage
 {
@@ -45,10 +43,7 @@ struct UniformImage
     size_t rowPitch;
 
     // Constructor for initializing the struct with default values
-    UniformImage()
-        : data(nullptr), width(0), height(0), bitDepth(0), rowPitch(0)
-    {
-    }
+    UniformImage() : data(nullptr), width(0), height(0), bitDepth(0), rowPitch(0) {}
 
     // Custom constructor for easy initialization
     UniformImage(void *pData, int w, int h, int depth, size_t pitch)
@@ -70,29 +65,29 @@ struct UniformImage
 };
 
 class Image
-{//Format is always ARGB
+{ // Format is always ARGB
   public:
     explicit Image(WorldPtr world) : mWorld(world) {}
 
     static inline UniformImage data(WorldPtr mWorld)
     {
-        std::tuple<A_long, A_long> size = WorldSuite3().getSize(mWorld);
-        auto rowbytes = WorldSuite3().getRowBytes(mWorld);
+        std::tuple<A_long, A_long> size = WorldSuite().getSize(mWorld);
+        auto rowbytes = WorldSuite().getRowBytes(mWorld);
         void *baseAddr = nullptr;
         int bitDepth = 8; // Default to 8, adjust based on actual data
-        switch (WorldSuite3().getType(mWorld))
+        switch (WorldSuite().getType(mWorld))
         {
-        case AE_WorldType::NONE:
+        case WorldType::NONE:
             break;
-        case AE_WorldType::W8:
-            baseAddr = WorldSuite3().getBaseAddr8(mWorld);
+        case WorldType::W8:
+            baseAddr = WorldSuite().getBaseAddr8(mWorld);
             break;
-        case AE_WorldType::W16:
-            baseAddr = WorldSuite3().getBaseAddr16(mWorld);
+        case WorldType::W16:
+            baseAddr = WorldSuite().getBaseAddr16(mWorld);
             bitDepth = 16;
             break;
-        case AE_WorldType::W32:
-            baseAddr = WorldSuite3().getBaseAddr32(mWorld);
+        case WorldType::W32:
+            baseAddr = WorldSuite().getBaseAddr32(mWorld);
             bitDepth = 32;
             break;
         }
@@ -100,44 +95,41 @@ class Image
     }
 // functions
 #ifdef USE_OPENCV
-    cv::Mat toFormat() {} // Implement conversion to cv::Mat
+    cv::Mat toFormat() {}            // Implement conversion to cv::Mat
     UniformImage toUniformImage() {} // Implement conversion to UniformImage
 #endif
 
 #ifdef USE_IMAGEMAGICK
-    Magick::Image toFormat() {} // Implement conversion to Magick::Image
+    Magick::Image toFormat() {}      // Implement conversion to Magick::Image
     UniformImage toUniformImage() {} // Implement conversion to UniformImage
 #endif
 
-        // New method to save the image using stb_image_write.h
+    // New method to save the image using stb_image_write.h
     static inline void saveImage(const std::string &filename, const std::string &format, UniformImage img)
     {
         auto imageData = img; // Assume this returns your UniformImage type
-                                 // with image data
+                              // with image data
         int width = imageData.width;
         int height = imageData.height;
         int channels = 4; // Assuming ARGB format (4 channels)
 
         // Convert ARGB to RGBA
         unsigned char *rgba = new unsigned char[width * height * channels];
-        unsigned char *argb = static_cast<unsigned char *>(
-            imageData.data); // Assuming imageData.data is your raw ARGB data
+        unsigned char *argb =
+            static_cast<unsigned char *>(imageData.data); // Assuming imageData.data is your raw ARGB data
 
         for (int i = 0; i < width * height; ++i)
         {
             rgba[i * 4 + 0] = argb[i * 4 + 1]; // R
             rgba[i * 4 + 1] = argb[i * 4 + 2]; // G
             rgba[i * 4 + 2] = argb[i * 4 + 3]; // B
-            rgba[i * 4 + 3] =
-                argb[i * 4 +
-                     0]; // A (moved from the first to the last position)
+            rgba[i * 4 + 3] = argb[i * 4 + 0]; // A (moved from the first to the last position)
         }
 
         // Save the image
         if (format == "png")
         {
-            stbi_write_png(filename.c_str(), width, height, channels, rgba,
-                           width * channels);
+            stbi_write_png(filename.c_str(), width, height, channels, rgba, width * channels);
         }
         else if (format == "bmp")
         {
@@ -151,6 +143,7 @@ class Image
         // Cleanup
         delete[] rgba;
     }
+
   private:
     WorldPtr mWorld;
 };

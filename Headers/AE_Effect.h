@@ -19,7 +19,6 @@
 /*                                                                 */
 /*******************************************************************/
 
-
 /** AE_Effect.h
 
 	Part of the After Effects SDK
@@ -1202,7 +1201,6 @@ typedef struct {
 typedef A_long PF_ParamIndex;
 
 typedef A_u_long	PF_UFixed;
-
 #ifndef A_INTERNAL
 
 	#if defined(_WINDOWS) || defined(__ANDROID__)

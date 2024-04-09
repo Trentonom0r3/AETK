@@ -1,48 +1,38 @@
-/*****************************************************************//**
- * \file   AEGP.hpp
- * \brief  Include all AEGP headers
- * 
- * \author tjerf
- * \date   March 2024
- *********************************************************************/
-#pragma once
+/*****************************************************************/ /**
+                                                                     * \file   AEGP.hpp
+                                                                     * \brief  The Core of the AEGP Library
+                                                                     *
+                                                                     * \author tjerf
+                                                                     * \date   April 2024
+                                                                     *********************************************************************/
 
 #ifndef AEGP_HPP
 #define AEGP_HPP
 
-#define SDK_VERSION 2023
+#include "AETK/Common/Common.hpp" // Common includes
 
-// General Imports
-#include "AETK/AEGP/Core/Base/AEGeneral.hpp" //Wrapper around all AEGP Suite headers
-#include "AETK/AEGP/Core/Base/SuiteManager.hpp" // Wrapper for AEGP_SuiteHandler and AEGP_PluginID
-#include "AETK/AEGP/Core/Base/Collection.hpp" // Wrapper for Collections of Items (not using collection suites)
-#include "AETK/AEGP/Core/Base/ItemCollection.hpp" // Wrapper for AEGP_ItemH, uses Layer.hpp, Comp.hpp, Footage.hpp, Folder.hpp
-#include "AETK/AEGP/Core/Base/LayerCollection.hpp" // Wrapper for AEGP_LayerH, uses Layer.hpp
-#include "AETK/AEGP/Core/Base/Property.hpp" // Wrapper for AEGP_PropertyH, uses AEGP_Value, AEGP_StreamRefH
-#include "AETK/AEGP/Core/Base/Misc.hpp" // Wrapper for AEGP_PropertyGroupH, uses Property.hpp
-//Mid-Level Wrapper imports
-#include "AETK/AEGP/Core/Project.hpp" // Wrapper for AEGP_ProjectH
-#include "AETK/AEGP/Core/App.hpp" //Wrapper for misc AEGP funcs related to application.
-#include "AETK/AEGP/Core/Effects.hpp" //Wrapper for AEGP_EffectRefH, uses Properties.hpp
-#include "AETK/AEGP/Core/Items.hpp" //Wrapper for AEGP_ItemH, uses Layer.hpp, Comp.hpp, Footage.hpp, Folder.hpp
-#include "AETK/AEGP/Core/Layer.hpp" //Wrapper for AEGP_CompH, uses Layer.hpp
-#include "AETK/AEGP/Core/Mask.hpp" //Wrapper for AEGP_CompH, uses Layer.hpp
+#include "AETK/AEGP/Core/Core.hpp" // Core Classes
 
-//Memory Related Imports
-#include "AETK/AEGP/Memory/AEAllocator.hpp" //custom allocator for AEGP to use with any STL containers
-#include "AETK/AEGP/Memory/AEMemory.hpp" //pre-defined "AE::Memory" namespace for AEGP containers. "AE::vector" etc.
+#include "AETK/AEGP/Memory/Memory.hpp"
 
-//Exception Imports
-#include "AETK/AEGP/Exception/Exception.hpp" //Custom Exception class for AEGP
-#include "AETK/AEGP/Exception/Logging.hpp" //Logging utility for AEGP
+#include "AETK/AEGP/Template/Collection.hpp" // Generic Collection Template
+#include "AETK/AEGP/Template/ItemCollection.hpp"
+#include "AETK/AEGP/Template/LayerCollection.hpp"
+#include "AETK/AEGP/Template/Plugin.hpp"
 
-//Utility Imports
-#include "AETK/AEGP/Util/Context.hpp" //Scoped Context Managers for AEGP Calls
-#include "AETK/AEGP/Util/Task.hpp" // Threading utility for calling and executing AEGP with multiple threads.
-#include "AETK/AEGP/Util/Image.hpp" // Image utility for AEGP
+#include "AETK/AEGP/Util/AssetManager.hpp"
+#include "AETK/AEGP/Util/Context.hpp"
+#include "AETK/AEGP/Util/Effects.hpp"
+#include "AETK/AEGP/Util/Factories.hpp"
+#include "AETK/AEGP/Util/Image.hpp"
+#include "AETK/AEGP/Util/Keyframe.hpp"
+#include "AETK/AEGP/Util/Masks.hpp"
+#include "AETK/AEGP/Util/Properties.hpp"
+#include "AETK/AEGP/Util/TaskScheduler.hpp"
 
-//Template Imports -Ommitted until further testing
-#include "AETK/AEGP/Template/Plugin.hpp" //Template class for designing plugins
+#include "AETK/AEGP/App.hpp"     // Application Class
+#include "AETK/AEGP/Items.hpp"   // Item Classes
+#include "AETK/AEGP/Layers.hpp"  // Layer Classes
+#include "AETK/AEGP/Project.hpp" // Project Class
 
-#endif // !AEGP_HPP
-
+#endif // AEGP_HPP
