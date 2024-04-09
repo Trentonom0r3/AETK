@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{AA46D499-7771-407F-A42F-8BD9A4B5F459}</ProjectGuid>
+    <ProjectGuid>{992A3057-2A33-4329-BA09-05C3F840DCA4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -68,14 +68,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)Headers;$(ProjectDir)Util;$(ProjectDir)Headers\SP;$(ProjectDir)Resources;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <ExternalIncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)Headers;$(ProjectDir)Util;$(ProjectDir)Headers\SP;$(ProjectDir)Resources;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -91,11 +91,15 @@
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)Headers\adobesdk\drawbotsuite;$(ProjectDir)Headers\adobesdk\config;$(ProjectDir)Headers\adobesdk;$(ProjectDir)Headers\SP;$(ProjectDir)Resources;$(ProjectDir)Util;$(ProjectDir)Headers;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icudtd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuiod.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuind.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuucd.lib";%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,7 +118,6 @@
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -124,43 +127,50 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="aetk\aegp\core\base\AEGeneral.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Base\ItemCollection.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Base\LayerCollection.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Base\Misc.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Base\Property.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Effects.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Items.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Layer.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Mask.cpp" />
-    <ClCompile Include="AETK\AEGP\Core\Project.cpp" />
-    <ClCompile Include="Util\AEGP_SuiteHandler.cpp" />
+    <ClInclude Include="aetk\aegp\AEGP.hpp" />
+    <ClInclude Include="AETK\AEGP\App.hpp" />
+    <ClInclude Include="aetk\aegp\core\Allocator.hpp" />
+    <ClInclude Include="aetk\aegp\core\Core.hpp" />
+    <ClInclude Include="aetk\aegp\core\Enums.hpp" />
+    <ClInclude Include="aetk\aegp\core\Exception.hpp" />
+    <ClInclude Include="aetk\aegp\core\Types.hpp" />
+    <ClInclude Include="aetk\aegp\core\Suites.hpp" />
+    <ClInclude Include="aetk\aegp\core\Utility.hpp" />
+    <ClInclude Include="AETK\AEGP\Items.hpp" />
+    <ClInclude Include="AETK\AEGP\Layers.hpp" />
+    <ClInclude Include="aetk\aegp\memory\Memory.hpp" />
+    <ClInclude Include="AETK\AEGP\Project.hpp" />
+    <ClInclude Include="AETK\AEGP\Template\Collection.hpp" />
+    <ClInclude Include="AETK\AEGP\Template\ItemCollection.hpp" />
+    <ClInclude Include="AETK\AEGP\Template\LayerCollection.hpp" />
+    <ClInclude Include="AETK\AEGP\Template\Plugin.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Context.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Effects.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Factories.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\AssetManager.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Image.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Keyframe.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Masks.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\Properties.hpp" />
+    <ClInclude Include="AETK\AEGP\Util\TaskScheduler.hpp" />
+    <ClInclude Include="aetk\common\Common.hpp" />
+    <ClInclude Include="aetk\common\SuiteManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="aetk\aegp\AEGP.hpp" />
-    <ClInclude Include="aetk\aegp\core\App.hpp" />
-    <ClInclude Include="aetk\aegp\core\base\AEGeneral.hpp" />
-    <ClInclude Include="aetk\aegp\core\base\Collection.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Base\guard_ptr.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Base\ItemCollection.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Base\LayerCollection.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Base\Misc.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Base\Property.hpp" />
-    <ClInclude Include="aetk\aegp\core\base\SuiteManager.hpp" />
-    <ClInclude Include="aetk\aegp\core\Effects.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Items.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Layer.hpp" />
-    <ClInclude Include="AETK\AEGP\Core\Mask.hpp" />
-    <ClInclude Include="aetk\aegp\core\Project.hpp" />
-    <ClInclude Include="aetk\aegp\exception\Exception.hpp" />
-    <ClInclude Include="AETK\AEGP\Exception\Logging.hpp" />
-    <ClInclude Include="aetk\aegp\memory\AEAllocator.hpp" />
-    <ClInclude Include="aetk\aegp\memory\AEMemory.hpp" />
-    <ClInclude Include="aetk\aegp\template\Plugin.hpp" />
-    <ClInclude Include="aetk\aegp\util\Context.hpp" />
-    <ClInclude Include="AETK\AEGP\Util\Image.hpp" />
-    <ClInclude Include="aetk\aegp\util\Task.hpp" />
-    <ClInclude Include="Util\entry.h" />
+    <ClCompile Include="AETK\src\AEGP\App.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Core\Suites.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Core\Types.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Items.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Layers.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Memory\ItemCollection.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Memory\LayerCollection.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Project.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Template\Plugin.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Util\Effects.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Util\Masks.cpp" />
+    <ClCompile Include="AETK\src\AEGP\Util\Properties.cpp" />
+    <ClCompile Include="AE\Util\AEGP_SuiteHandler.cpp" />
+    <ClCompile Include="AE\Util\MissingSuiteError.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

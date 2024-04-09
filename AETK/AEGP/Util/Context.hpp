@@ -1,21 +1,19 @@
-/*****************************************************************//**
- * \file   Context.hpp
- * \brief  File Containing Scoped "Context Managers"
- * Currently only supports Scoped_Undo_Guard and Scoped_Quiet_Guard, for
- * scoping Undo Groups and Quiet Mode for error messages.
- * 
- * \author tjerf
- * \date   March 2024
- *********************************************************************/
+/*****************************************************************/ /**
+                                                                     * \file   Context.hpp
+                                                                     * \brief  File Containing Scoped "Context Managers"
+                                                                     * Currently only supports Scoped_Undo_Guard and
+                                                                     *Scoped_Quiet_Guard, for scoping Undo Groups and
+                                                                     *Quiet Mode for error messages.
+                                                                     *
+                                                                     * \author tjerf
+                                                                     * \date   March 2024
+                                                                     *********************************************************************/
 
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include "AETK/AEGP/Core/Base/AEGeneral.hpp"
-#include "AETK/AEGP/Exception/Logging.hpp" //Logging utility for AEGP
+#include "AETK/AEGP/Core/Core.hpp"
 
-namespace AE
-{
 /**
  * @brief Scoped_Undo_Guard is a class that is used to start and end an undo
  * group
@@ -39,15 +37,12 @@ class Scoped_Undo_Guard
      *
      * @param name The name of the undo group.
      */
-    Scoped_Undo_Guard(std::string name)
-    {
-        UtilitySuite6().startUndoGroup(name);
-    }
+    Scoped_Undo_Guard(std::string name) { UtilitySuite().startUndoGroup(name); }
 
     /**
      * Destructs the Scoped_Undo_Guard object and ends the undo group.
      */
-    ~Scoped_Undo_Guard() { UtilitySuite6().endUndoGroup(); }
+    ~Scoped_Undo_Guard() { UtilitySuite().endUndoGroup(); }
 };
 
 /**
@@ -72,13 +67,13 @@ class Scoped_Quiet_Guard
      * Constructs a Scoped_Quiet_Guard object and starts quiet mode for error
      * messages.
      */
-    Scoped_Quiet_Guard() { UtilitySuite6().startQuietErrors(); }
+    Scoped_Quiet_Guard() { UtilitySuite().startQuietErrors(); }
 
     /**
      * Destructs the Scoped_Quiet_Guard object and ends quiet mode for error
      * messages.
      */
-    ~Scoped_Quiet_Guard() { UtilitySuite6().endQuietErrors(false); }
+    ~Scoped_Quiet_Guard() { UtilitySuite().endQuietErrors(false); }
 };
 /**
  * @class Scoped_Error_Reporter
@@ -152,49 +147,9 @@ class Scoped_Error_Reporter
      *
      * @param errorMessage The error message to be reported.
      */
-    inline void ReportError(const std::string &errorMessage)
-    {
-        UtilitySuite6().reportInfo(errorMessage);
-    }
+    inline void ReportError(const std::string &errorMessage) { UtilitySuite().reportInfo(errorMessage); }
 };
 
-class Scoped_Error_Logger
-{
-  public:
-    Scoped_Error_Logger() = default;
 
-    ~Scoped_Error_Logger()
-    {
-        try
-        {
-            if (std::current_exception())
-            { // Checks if there's an active exception
-                try
-                {
-                    throw; // Re-throws the caught exception to handle it
-                }
-                catch (const std::exception &e)
-                {
-                    // Use the logging system to report standard exceptions
-                    LOG_ERROR("Scoped_Error_Logger", e.what());
-                }
-                catch (...)
-                {
-                    // Use the logging system to report non-standard exceptions
-                    LOG_ERROR("Scoped_Error_Logger",
-                              "An unknown error occurred.");
-                }
-            }
-        }
-        catch (...)
-        {
-            // Use the logging system to report errors during exception handling
-            LOG_ERROR("Scoped_Error_Logger",
-                      "An error occurred while handling an exception.");
-        }
-    }
-};
-
-} // namespace AE
 
 #endif // CONTEXT_HPP
