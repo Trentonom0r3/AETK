@@ -704,6 +704,48 @@ void CompSuite::SetCompDuration(CompPtr comp, A_Time duration)
     AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_SetCompDuration(*comp, &duration));
 }
 
+void CompSuite::SetCompDimensions(CompPtr comp, int width, int height)
+{
+    CheckNotNull(*comp, "Error Setting Comp Dimensions. Comp is Null");
+    AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_SetCompDimensions(*comp, width, height));
+}
+
+void CompSuite::SetCompPixelAspectRatio(CompPtr comp, A_Ratio pixelAspectRatio)
+{
+    CheckNotNull(*comp, "Error Setting Comp Pixel Aspect Ratio. Comp is Null");
+    AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_SetCompPixelAspectRatio(
+        *comp, &pixelAspectRatio));
+}
+
+LayerPtr CompSuite::CreateTextLayerInComp(CompPtr comp, bool newLayer)
+{
+    CheckNotNull(*comp, "Error Creating Text Layer in Comp. Comp is Null");
+
+    AEGP_LayerH layerH;
+    AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_CreateTextLayerInComp(*comp, newLayer,
+                                                                                                     &layerH));
+    return std::make_shared<AEGP_LayerH>(layerH);
+}
+
+LayerPtr CompSuite::CreateBoxTextLayerInComp(CompPtr comp, FloatPoint boxDimensions, bool newLayer)
+{
+    CheckNotNull(*comp, "Error Creating Box Text Layer in Comp. Comp is Null");
+    AEGP_LayerH layerH;
+    AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_CreateBoxTextLayerInComp(
+        *comp, newLayer, boxDimensions.ToA_FloatPoint(), &layerH));
+    return std::make_shared<AEGP_LayerH>(layerH);
+}
+
+LayerPtr CompSuite::CreateNullInComp(CompPtr comp, const std::string &name, A_Time duration)
+{
+    CheckNotNull(*comp, "Error Creating Null in Comp. Comp is Null");
+	AEGP_LayerH layerH;
+	std::vector<A_UTF16Char> name16 = ConvertUTF8ToUTF16(name);
+    AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().CompSuite11()->AEGP_CreateNullInComp(
+		name16.data(), *comp, &duration, &layerH));
+	return std::make_shared<AEGP_LayerH>(layerH);
+}
+
 CompPtr CompSuite::DuplicateComp(CompPtr comp)
 {
     CheckNotNull(*comp, "Error Duplicating Comp. Comp is Null");
@@ -1043,6 +1085,10 @@ FloatRect LayerSuite::GetLayerMaskedBounds(LayerPtr layer, LTimeMode timeMode, A
 
 ObjectType LayerSuite::GetLayerObjectType(LayerPtr layer)
 {
+    if (layer == nullptr)
+    {
+		return ObjectType::NONE;
+	}
     CheckNotNull(*layer, "Error Getting Layer Object Type. Layer is Null");
     AEGP_ObjectType type;
     AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().LayerSuite9()->AEGP_GetLayerObjectType(*layer, &type));
@@ -1521,14 +1567,15 @@ StreamRefPtr DynamicStreamSuite::AddStream(StreamRefPtr parentGroup, const std::
         *SuiteManager::GetInstance().GetPluginID(), *parentGroup, matchName.c_str(), &streamH));
     return std::shared_ptr<AEGP_StreamRefH>(new AEGP_StreamRefH(streamH), StreamRefDeleter());
 }
-
+///* << UTF8!! use A_char[AEGP_MAX_STREAM_MATCH_NAME_SIZE] for buffer */
 std::string DynamicStreamSuite::GetMatchname(StreamRefPtr stream)
 {
     CheckNotNull(*stream, "Error Getting Matchname. Stream is Null");
-    A_char *matchname = nullptr;
+    A_char matchname[AEGP_MAX_STREAM_MATCH_NAME_SIZE];
     AE_CHECK(
         SuiteManager::GetInstance().GetSuiteHandler().DynamicStreamSuite4()->AEGP_GetMatchName(*stream, matchname));
-    return std::string(matchname);
+    std::string matchnameStr(matchname);
+    return matchnameStr;
 }
 
 StreamRefPtr DynamicStreamSuite::GetNewParentStreamRef(StreamRefPtr stream)
@@ -1685,7 +1732,7 @@ std::tuple<StreamValue2Ptr, StreamValue2Ptr> KeyframeSuite::GetNewKeyframeSpatia
     AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().KeyframeSuite5()->AEGP_GetNewKeyframeSpatialTangents(
         *SuiteManager::GetInstance().GetPluginID(), *stream, keyIndex, &inTan, &outTan));
     return std::make_tuple(std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(inTan), StreamValueDeleter()),
-						   std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(outTan), StreamValueDeleter()));
+                           std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(outTan), StreamValueDeleter()));
 }
 
 void KeyframeSuite::SetKeyframeSpatialTangents(StreamRefPtr stream, AEGP_KeyframeIndex keyIndex, StreamValue2Ptr inTan,

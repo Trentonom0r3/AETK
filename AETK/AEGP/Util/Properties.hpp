@@ -47,7 +47,7 @@ class BaseProperty
     virtual std::shared_ptr<BaseProperty>
     getProperty(const std::string &name) const; // should really only be used with PropertyGroups
     virtual std::shared_ptr<BaseProperty>
-    getProperty(int index) const; // should really only be used with PropertyGroups
+    getPropertyByIndex(int index) const; // should really only be used with PropertyGroups
 
     virtual void addProperty(const std::string &name) const; // should really only be used with PropertyGroups
 
@@ -55,7 +55,7 @@ class BaseProperty
 
     virtual void removeProperty(int index) const; // should really only be used with PropertyGroups
 
-    inline int numKeys();
+    int numKeys();
 
     KeyFrame getKeyframe(int index);
 
@@ -96,7 +96,7 @@ class PropertyGroup : public BaseProperty
     int getNumProperties() const;
 
    std::shared_ptr<BaseProperty> getProperty(const std::string &name) const override;
-   std::shared_ptr<BaseProperty> getProperty(int index) const override;
+   std::shared_ptr<BaseProperty> getPropertyByIndex(int index) const override;
 
     template <typename EnumType>std::shared_ptr<BaseProperty> getProperty(EnumType index) const;
 

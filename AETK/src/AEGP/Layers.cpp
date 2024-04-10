@@ -205,6 +205,10 @@ tk::shared_ptr<OneDProperty> AVLayer::PlaneSubdivision()
 tk::shared_ptr<Layer> Layer::activeLayer()
 {
     auto layerptr = LayerSuite().GetActiveLayer();
+    if (layerptr == NULL)
+    {
+		return nullptr;
+	}
     return LayerFactory::createLayer(layerptr);
 }
 

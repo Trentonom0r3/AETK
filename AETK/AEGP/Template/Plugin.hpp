@@ -68,9 +68,9 @@ class Command
     // Helper functions for command manipulation.
     inline void insertCommand(MenuID menuID, int after_item = AEGP_MENU_INSERT_SORTED)
     {
-        m_commandSuite.insertMenuCommand(m_command, m_name.c_str(), menuID, after_item);
+        m_commandSuite.insertMenuCommand(m_command, m_name, menuID, after_item);
     }
-    inline void setCommandName(std::string name) { m_commandSuite.setMenuCommandName(m_command, name.c_str()); }
+    inline void setCommandName(std::string name) { m_commandSuite.setMenuCommandName(m_command, name); }
     inline void enableCommand(bool enable)
     {
         if (enable)

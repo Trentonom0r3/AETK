@@ -3,8 +3,14 @@
 
 std::string BaseProperty::getName() const
 {
-
-    return StreamSuite().GetStreamName(m_property, TRUE);
+    try
+    {
+        return StreamSuite().GetStreamName(m_property, TRUE);
+    }
+    catch (const AEException &e)
+    {
+        throw e;
+    }
 }
 
 void BaseProperty::setName(const std::string &name)
@@ -23,8 +29,14 @@ std::shared_ptr<BaseProperty> BaseProperty::duplicate()
 
 std::string BaseProperty::matchName() const
 {
-
-    return DynamicStreamSuite().GetMatchname(m_property);
+    try
+    {
+        return DynamicStreamSuite().GetMatchname(m_property);
+    }
+    catch (const AEException &e)
+    {
+        throw e;
+    }
 }
 
 void BaseProperty::reOrder(int index)
@@ -39,7 +51,7 @@ std::shared_ptr<BaseProperty> BaseProperty::getProperty(const std::string &name)
     return PropertyFactory::CreateProperty(stream);
 }
 
-std::shared_ptr<BaseProperty> BaseProperty::getProperty(int index) const
+std::shared_ptr<BaseProperty> BaseProperty::getPropertyByIndex(int index) const
 {
 
     auto stream = DynamicStreamSuite().GetNewStreamRefByIndex(m_property, index);
@@ -305,7 +317,8 @@ void OneDProperty::setValue(double value)
 
     AEGP_StreamValue2 val;
     val.val.one_d = value;
-    StreamSuite().SetStreamValue(m_property, std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    StreamSuite().SetStreamValue(m_property,
+                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
 }
 
 TwoDVal TwoDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
@@ -319,7 +332,8 @@ void TwoDProperty::setValue(TwoDVal value)
 {
     AEGP_StreamValue2 val;
     val.val.two_d = value.ToAEGPTwoDVal();
-    StreamSuite().SetStreamValue(m_property,  std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    StreamSuite().SetStreamValue(m_property,
+                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
 }
 
 ThreeDVal ThreeDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
@@ -333,7 +347,8 @@ void ThreeDProperty::setValue(ThreeDVal value)
 {
     AEGP_StreamValue2 val;
     val.val.three_d = value.ToAEGPThreeDVal();
-    StreamSuite().SetStreamValue(m_property, std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    StreamSuite().SetStreamValue(m_property,
+                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
 }
 
 ColorVal ColorProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
@@ -348,24 +363,26 @@ void ColorProperty::setValue(ColorVal value)
 {
     AEGP_StreamValue2 val;
     val.val.color = value.ToAEGPColorVal();
-    StreamSuite().SetStreamValue(m_property, std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    StreamSuite().SetStreamValue(m_property,
+                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
 }
 
- std::shared_ptr<Marker> MarkerProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
+std::shared_ptr<Marker> MarkerProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    return std::make_shared<Marker>(std::shared_ptr<AEGP_MarkerValP>(new AEGP_MarkerValP(val->val.markerP),
-                                    MarkerDeleter()));
+    return std::make_shared<Marker>(
+        std::shared_ptr<AEGP_MarkerValP>(new AEGP_MarkerValP(val->val.markerP), MarkerDeleter()));
 }
 
- std::shared_ptr<Marker> MarkerProperty::addMarker(double time)
+std::shared_ptr<Marker> MarkerProperty::addMarker(double time)
 {
     auto idx = KeyframeSuite().InsertKeyframe(m_property, LTimeMode::CompTime, SecondsToTime(time));
     MarkerValPtr mrk = MarkerSuite().getNewMarker();
     AEGP_StreamValue2 val;
     val.streamH = *m_property;
     val.val.markerP = *mrk;
-    KeyframeSuite().SetKeyframeValue(m_property, idx,  std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    KeyframeSuite().SetKeyframeValue(
+        m_property, idx, std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
     return std::make_shared<Marker>(mrk);
 }
 
@@ -383,13 +400,13 @@ int MaskIDProperty::getValue(LTimeMode timeMode, double time, bool preExpression
     return value;
 }
 
- std::shared_ptr<MaskOutline> MaskOutlineProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
+std::shared_ptr<MaskOutline> MaskOutlineProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
     return std::make_shared<MaskOutline>(std::make_shared<AEGP_MaskOutlineValH>(val->val.mask));
 }
 
- std::shared_ptr<TextDocument> TextDocumentProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
+std::shared_ptr<TextDocument> TextDocumentProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
 
@@ -401,16 +418,23 @@ int PropertyGroup::getNumProperties() const
     return DynamicStreamSuite().GetNumStreamsInGroup(m_property);
 }
 
- std::shared_ptr<BaseProperty> PropertyGroup::getProperty(const std::string &name) const
+std::shared_ptr<BaseProperty> PropertyGroup::getProperty(const std::string &name) const
 {
     auto stream = DynamicStreamSuite().GetNewStreamRefByMatchname(m_property, name);
-    return std::make_shared<BaseProperty>(stream);
+    return PropertyFactory::CreateProperty(stream);
 }
 
- std::shared_ptr<BaseProperty> PropertyGroup::getProperty(int index) const
+std::shared_ptr<BaseProperty> PropertyGroup::getPropertyByIndex(int index) const
 {
-    auto stream = DynamicStreamSuite().GetNewStreamRefByIndex(m_property, index);
-    return std::make_shared<BaseProperty>(stream);
+    try
+    {
+        auto stream = DynamicStreamSuite().GetNewStreamRefByIndex(m_property, index);
+        return PropertyFactory::CreateProperty(stream);
+    }
+    catch (const AEException &e)
+    {
+        throw e;
+    }
 }
 
 void PropertyGroup::addProperty(const std::string &name) const

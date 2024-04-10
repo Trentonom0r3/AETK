@@ -280,6 +280,7 @@ enum class LTimeMode
 
 enum class LayerStream
 {
+    SOURCE_TEXT = AEGP_LayerStream_SOURCE_TEXT,
     // Valid for all layer types
     ANCHORPOINT = AEGP_LayerStream_ANCHORPOINT,
     POSITION = AEGP_LayerStream_POSITION,
