@@ -25,6 +25,42 @@ AE::App app;
 app.Alert("Welcome to AETK!");
 ```
 
+## Sample Projects
+
+To help you get started with AETK, we've provided some sample projects that demonstrate the capabilities and best practices of AETK plugin development. These projects range from simple examples for beginners to more complex plugins for advanced users.
+
+### AEGP Skeleton
+
+This project demonstrates the basic structure for creating AEGP Plugins with AETK.
+
+- **Project Repository**: [Skeleton](https://github.com/Trentonom0r3/AETK/tree/main/AEGP/Skeleton)
+- **Features Demonstrated**: Object-oriented plugin design.
+- **Level**: Beginner
+
+### Grabba
+
+A recreation of the original 'Grabba' Sample Project from the vanila SDK.
+
+- **Project Repository**: [Grabba](https://github.com/Trentonom0r3/AETK/tree/main/AEGP/Grabba)
+- **Features Demonstrated**: Object-oriented plugin design, retrieving and saving frames from compositions.
+- **Level**: Beginner
+- 
+### LayerDumper
+
+An intermediate project showcasing how to interract with layers and their properties using AETK.
+
+- **Project Repository**: [LayerDumper](https://github.com/Trentonom0r3/AETK/tree/main/AEGP/LayerDumper)
+- **Features Demonstrated**: Object-oriented plugin design, Efficient asset management, layer/property manipulation.
+- **Level**: Intermediate
+
+### TaskScheduler
+
+A simple project showcasing advanced Ideas such as Scheduling AE tasks from threads. 
+
+- **Project Repository**: [TaskScheduler](https://github.com/Trentonom0r3/AETK/tree/main/AEGP/TaskScheduler)
+- **Features Demonstrated**: Object-oriented plugin design, AE execution from a threaded plugin. 
+- **Level**: Intermediate
+
 ## Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
