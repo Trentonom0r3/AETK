@@ -245,6 +245,13 @@ class CompSuite
     A_Time GetCompDisplayStartTime(CompPtr comp);                   /* Get Comp Display Start Time.*/
     void SetCompDisplayStartTime(CompPtr comp, A_Time startTime);   /* Set Comp Display Start Time.*/
     void SetCompDuration(CompPtr comp, A_Time duration);            /* Set Comp Duration.*/
+
+    void SetCompDimensions(CompPtr comp, int width, int height); /* Set Comp Dimensions.*/
+    void SetCompPixelAspectRatio(CompPtr comp, A_Ratio pixelAspectRatio); /* Set Comp Pixel Aspect Ratio.*/
+    LayerPtr CreateTextLayerInComp(CompPtr comp, bool newLayer = true); /* Create Text Layer in Comp.*/
+    LayerPtr CreateBoxTextLayerInComp(CompPtr comp, FloatPoint boxDimensions,
+        									  bool newLayer = true); /* Create Box Text Layer in Comp.*/
+    LayerPtr CreateNullInComp(CompPtr comp, const std::string &name, A_Time duration); /* Create Null in Comp.*/
     CompPtr DuplicateComp(CompPtr comp);                            /* Duplicate Comp.*/
     A_Time GetCompFrameDuration(CompPtr comp);                      /* Get Comp Frame Duration.*/
     CompPtr GetMostRecentlyUsedComp();                              /* Get Most Recently Used Comp.*/

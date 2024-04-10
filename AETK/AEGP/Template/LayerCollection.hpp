@@ -37,6 +37,9 @@ class LayerCollection : public Collection<tk::shared_ptr<Layer>>
     LayerCollection(tk::vector<tk::shared_ptr<Layer>> layers) : Collection(layers) {}
     ~LayerCollection() = default;
 
+
+    tk::shared_ptr<Layer> createTextLayer(const std::string &text, ColorVal color = {1, 1, 1, 1});
+
     // operator
     // tk::shared_ptr<Layer> operator[](size_t index) override { return m_collection[index]; }
     //    virtual size_t size() { return m_collection.size(); }

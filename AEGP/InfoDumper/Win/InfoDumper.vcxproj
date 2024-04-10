@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F92835DD-4FE4-4F57-A439-B7EA704933DF}</ProjectGuid>
-    <RootNamespace>Grabba</RootNamespace>
-    <ProjectName>Grabba</ProjectName>
+    <RootNamespace>InfoDumper</RootNamespace>
+    <ProjectName>LayerDumper</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -97,7 +97,7 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.aex</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\tjerf\source\repos\AETK\;$(VcpkgRoot)\installed\x64-windows-static\include;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\..\AETK;$(VcpkgRoot)\installed\x64-windows-static\include;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <VcpkgConfiguration>Debug</VcpkgConfiguration>
@@ -110,13 +110,13 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Grabba.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/InfoDumper.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\tjerf\source\repos\AETK\;..\..\..\Headers;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\AETK;..\..\..\Headers;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -165,7 +165,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Grabba.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/InfoDumper.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -218,7 +218,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Grabba.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/InfoDumper.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -270,7 +270,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Grabba.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/InfoDumper.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -318,7 +318,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Grabba.h" />
+    <ClInclude Include="..\LayerDumper.h" />
     <ClInclude Include="..\..\..\Headers\A.h" />
     <ClInclude Include="..\..\..\Headers\AE_AdvEffectSuites.h" />
     <ClInclude Include="..\..\..\Headers\AE_Effect.h" />
@@ -340,7 +340,7 @@
     <ClInclude Include="..\..\..\Util\String_Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\Grabba_PiPL.r">
+    <CustomBuild Include="..\LayerDumper_PiPL.r">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling the PiPL</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling the PiPL</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I "$(ProjectDir)..\..\..\Headers" /EP ".."\\"%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
@@ -368,7 +368,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Grabba_PiPL.rc" />
+    <ResourceCompile Include="LayerDumper_PiPL.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\AETK\src\AEGP\App.cpp" />
@@ -384,7 +384,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="..\..\..\AETK\src\AEGP\Util\Properties.cpp" />
     <ClCompile Include="..\..\..\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="..\..\..\Util\MissingSuiteError.cpp" />
-    <ClCompile Include="..\Grabba.cpp" />
+    <ClCompile Include="..\LayerDumper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
