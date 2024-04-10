@@ -25,4 +25,5 @@ class TaskScheduler : public Plugin {
 	void onDeath();
 
 	void onIdle();
+
 };

@@ -106,7 +106,7 @@ class CompItem : public Item
   public:
     CompItem() : Item() {}
     CompItem(ItemPtr item) : Item(item), m_comp(CompSuite().GetCompFromItem(item)) {}
-    CompItem(CompPtr comp) : m_comp(comp) {}
+    CompItem(CompPtr comp) : m_comp(comp), Item(CompSuite().GetItemFromComp(comp)) {}
 
     CompPtr getComp() { return m_comp; }
     static CompItem mostRecent(); // Returns the most recent comp

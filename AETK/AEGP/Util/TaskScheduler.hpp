@@ -47,6 +47,9 @@
  * upon the next idle cycle, executes this task on the main thread, ensuring compatibility with AE SDK requirements and
  * maintaining plugin responsiveness.
  */
+namespace ae
+{
+
 class TaskScheduler
 {
   public:
@@ -134,7 +137,7 @@ class TaskScheduler
     std::mutex queueMutex;
     std::queue<std::function<void()>> tasksQueue;
 };
-
+} // namespace ae
 /**
  * @brief Schedules a task with a return value.
  * @tparam ReturnType The return type of the task.
@@ -147,7 +150,7 @@ class TaskScheduler
 template <typename ReturnType>
 inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bool callIdle = TRUE)
 {
-    return TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
+    return ae::TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
 }
 
 /**
@@ -156,9 +159,9 @@ inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bo
  * @param callIdle Flag indicating whether to call idle routines for quicker
  * response.
  */
-inline void ScheduleTask(std::function<void()> task, bool callIdle = FALSE)
+inline void ScheduleTask(std::function<void()> task, bool callIdle = TRUE)
 {
-    TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
+    ae::TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
 }
 
 #endif // TASK_SCHEDULER_HPP
