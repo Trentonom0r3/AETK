@@ -8,6 +8,10 @@
 tk::shared_ptr<Item> Item::activeItem()
 {
     auto item = ItemSuite().GetActiveItem();
+    if (!item)
+    {
+		return nullptr;
+	}
     return ItemFactory::createItem(item);
 }
 
