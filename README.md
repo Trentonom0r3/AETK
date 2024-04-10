@@ -7,6 +7,7 @@ Welcome to the Adobe After Effects Plugin Standard Library (AETK), a modern C++ 
 
 - **Modern C++ Design**: Leveraging modern C++ features for a clean, robust, and efficient codebase.
 - **Comprehensive Suite Handling**: Simplified interactions with After Effects' diverse suites, from item management to rendering.
+- **Automatic Memory Management**: AETK Handles disposing AEGP handles as necessary, so you can focus on writing plugins!
 - **Object-Oriented Approach**: AETK's design revolves around intuitive object-oriented principles, making plugin development more accessible and maintainable.
 - **Efficient Asset Management**: Tools for importing, handling, and manipulating assets within After Effects projects.
 - **Rendering and Composition**: Advanced support for rendering options, composition items, and layer management to create sophisticated visual effects.
