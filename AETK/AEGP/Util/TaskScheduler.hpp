@@ -10,7 +10,7 @@
 #ifndef TASK_SCHEDULER_HPP
 #define TASK_SCHEDULER_HPP
 
-#include "AETK/AEGP/Core/Core.hpp"
+#include "AETK/Common/Common.hpp"
 
 /**
  * @class TaskScheduler
@@ -69,7 +69,7 @@ class TaskScheduler
      * @param callIdle Flag indicating whether to call idle routines for quicker
      * response.
      */
-    inline void ScheduleTask(std::function<void()> task, bool callIdle = TRUE)
+    inline void ScheduleTask(std::function<void()> task, bool callIdle = true)
     {
         std::lock_guard<std::mutex> lock(queueMutex);
         tasksQueue.push(std::move(task));
@@ -89,12 +89,11 @@ class TaskScheduler
      * of the task.
      */
     template <typename ReturnType>
-    inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bool callIdle = TRUE)
+    std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bool callIdle = true)
     {
         auto promise = std::make_shared<std::promise<ReturnType>>();
         auto future = promise->get_future();
 
-        // Wrap the user's task to handle the promise/future mechanism
         std::function<void()> taskWrapper = [promise, task]() {
             try
             {
@@ -102,22 +101,14 @@ class TaskScheduler
             }
             catch (...)
             {
-                try
-                {
-                    // Attempt to re-throw the caught exception
-                    throw;
-                }
-                catch (...)
-                {
-                    // Store any exception in the promise
-                    promise->set_exception(std::current_exception());
-                }
+                promise->set_exception(std::current_exception());
             }
         };
 
         ScheduleTask(taskWrapper, callIdle); // Schedule the wrapped task
         return future;
     }
+
 
     /**
      * @brief Executes the next scheduled task.
@@ -148,7 +139,7 @@ class TaskScheduler
  * the task.
  */
 template <typename ReturnType>
-inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bool callIdle = TRUE)
+inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bool callIdle = true)
 {
     return ae::TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
 }
@@ -159,9 +150,46 @@ inline std::future<ReturnType> ScheduleTask(std::function<ReturnType()> task, bo
  * @param callIdle Flag indicating whether to call idle routines for quicker
  * response.
  */
-inline void ScheduleTask(std::function<void()> task, bool callIdle = TRUE)
+inline void ScheduleTask(std::function<void()> task, bool callIdle = true)
 {
     ae::TaskScheduler::GetInstance().ScheduleTask(task, callIdle);
 }
+
+namespace ae
+{
+
+template <typename Func> auto ScheduleOrExecute(Func &&func)
+{
+    using ReturnType = typename std::invoke_result<Func>::type;
+
+    auto taskPtr = std::make_shared<std::packaged_task<ReturnType()>>(std::forward<Func>(func));
+    auto future = taskPtr->get_future();
+
+#ifdef TK_INTERNAL
+    TaskScheduler::GetInstance().ScheduleTask([taskPtr]() {
+        try
+        {
+            (*taskPtr)();
+        }
+        catch (...)
+        {
+            // Log the exception here if needed
+        }
+    });
+#else
+    try
+    {
+        (*taskPtr)();
+    }
+    catch (...)
+    {
+        // Log or handle the immediate exception if needed
+    }
+#endif
+
+    return future;
+}
+
+} // namespace ae
 
 #endif // TASK_SCHEDULER_HPP

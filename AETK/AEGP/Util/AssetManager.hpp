@@ -49,7 +49,7 @@ class AssetManager
         else
         {
             // This is a sequence
-            footage = suite.newFootage(filePath, AssetManager::layerkey(name), &AssetManager::sequence(),
+            footage = suite.newFootage(filePath, AssetManager::layerkey(name), &FileSequenceImportOptions(AssetManager::sequence()),
                                        InterpretationStyle::NO_DIALOG_NO_GUESS);
         }
         if (footage.get())
@@ -76,7 +76,7 @@ class AssetManager
 
     // Finds assets based on a predicate function
     // Will require ItemCollection to be implemented
-    // std::vector<ItemPtr> findAssets(const std::function<bool(const ItemPtr &)> &predicate);
+    //std::vector<ItemPtr> findAssets(const std::function<bool(const ItemPtr &)> &predicate);
 
   protected:
     static inline AEGP_FootageLayerKey layerkey(const std::string &name)

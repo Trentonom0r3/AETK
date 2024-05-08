@@ -35,4 +35,39 @@
 #include "AETK/AEGP/Layers.hpp"  // Layer Classes
 #include "AETK/AEGP/Project.hpp" // Project Class
 
+
+class AsyncRenderManager
+    {
+  public:
+    AsyncRenderManager() {}
+
+    // Method to initiate async rendering with an optional custom callback
+    void renderAsync(LayerRenderOptionsPtr optionsH, std::function<void(WorldPtr)> callbackF)
+    {
+        auto callbackPtr = new std::function<void(WorldPtr)>(callbackF);
+
+        auto ret = std::async(std::launch::async, [optionsH, callbackPtr]() {
+            RenderSuite().renderAndCheckoutLayerFrameAsync(optionsH, callback,
+                                                           reinterpret_cast<AEGP_AsyncFrameRequestRefcon>(callbackPtr));
+        });
+    }
+
+
+    // Existing static callback method remains unchanged
+    static A_Err callback(AEGP_AsyncRequestId request_id, A_Boolean was_canceled, A_Err error,
+                          AEGP_FrameReceiptH receiptH, AEGP_AsyncFrameRequestRefcon refconP0)
+    {
+        auto callbackPtr = reinterpret_cast<std::function<void(WorldPtr)> *>(refconP0);
+
+        if (callbackPtr && *callbackPtr)
+        {
+            FrameReceiptPtr ptr = makeFrameReceiptPtr(receiptH);
+            auto& world = RenderSuite().getReceiptWorld(ptr);
+            (*callbackPtr)(world);
+            delete callbackPtr;
+        }
+        return error;
+    }
+};
+
 #endif // AEGP_HPP

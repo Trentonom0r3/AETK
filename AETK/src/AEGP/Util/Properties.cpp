@@ -101,7 +101,7 @@ KeyFrame BaseProperty::getKeyframe(int index) // Gets the Key at the given index
         throw std::out_of_range("Keyframe index out of range");
     }
     auto keyIndex = index;
-    auto time = TimeToSeconds(KeyframeSuite().GetKeyframeTime(m_property, keyIndex, LTimeMode::CompTime));
+    auto time = KeyframeSuite().GetKeyframeTime(m_property, keyIndex, LTimeMode::CompTime).toSeconds();
     auto value = KeyframeSuite().GetNewKeyframeValue(m_property, keyIndex);
     auto flags = KeyframeSuite().GetKeyframeFlags(m_property, keyIndex);
     auto interp = KeyframeSuite().GetKeyframeInterpolation(m_property, keyIndex);
@@ -143,7 +143,7 @@ inline KeyFrame BaseProperty::getNearestKeyframe(double time) // Gets the neares
     int keyNum = KeyframeSuite().GetStreamNumKFs(m_property);
     for (int i = 0; i < keyNum; i++)
     {
-        auto keyTime = TimeToSeconds(KeyframeSuite().GetKeyframeTime(m_property, i, LTimeMode::CompTime));
+        auto keyTime = KeyframeSuite().GetKeyframeTime(m_property, i, LTimeMode::CompTime).toSeconds();
         double timeDifference = std::abs(keyTime - time);
 
         if (timeDifference < nearestTimeDifference)
@@ -167,8 +167,10 @@ inline void BaseProperty::addKey(const KeyFrame &keyframe) // Adds Keyframe to t
 {
     auto akH = KeyframeSuite().StartAddKeyframes(m_property);
     auto keyIndex = KeyframeSuite().AddKeyframes(akH, LTimeMode::CompTime, SecondsToTime(keyframe.time));
-    KeyframeSuite().SetAddKeyframe(
-        akH, keyIndex, std::shared_ptr<AEGP_StreamValue2>(&(convertToAEValue(keyframe.value)), StreamValueDeleter()));
+    KeyframeSuite().SetAddKeyframe(akH, keyIndex, makeStreamValue2Ptr(convertToAEValue(keyframe.value)));
+    //converttoAEValue(keyframe.value) make this accept streamrefptr as well (for binding)
+    //makeStreaValue2otr take streamRefptr as arg, then std::variant, then return streamValue2Ptr
+
     setKeyFlags(keyIndex, keyframe.flags);
     // Check if interpolation is specified and apply it
     if (keyframe.interp.has_value())
@@ -206,9 +208,7 @@ inline void BaseProperty::addKeys(const tk::vector<KeyFrame> &keyframes) // Adds
     for (const auto &keyframe : keyframes)
     {
         auto keyIndex = KeyframeSuite().AddKeyframes(akH, LTimeMode::CompTime, SecondsToTime(keyframe.time));
-        KeyframeSuite().SetAddKeyframe(
-            akH, keyIndex,
-            std::shared_ptr<AEGP_StreamValue2>(&(convertToAEValue(keyframe.value)), StreamValueDeleter()));
+        KeyframeSuite().SetAddKeyframe(akH, keyIndex, makeStreamValue2Ptr(convertToAEValue(keyframe.value)));
         setKeyFlags(keyIndex, keyframe.flags);
 
         // Check if interpolation is specified and apply it
@@ -265,9 +265,8 @@ inline void BaseProperty::setKeyTemporalEase(AEGP_KeyframeIndex keyIndex, A_long
 inline void BaseProperty::setKeySpatialTangents(AEGP_KeyframeIndex keyIndex, AEGP_StreamValue2 inTan,
                                                 AEGP_StreamValue2 outTan)
 {
-    KeyframeSuite().SetKeyframeSpatialTangents(m_property, keyIndex,
-                                               std::shared_ptr<AEGP_StreamValue2>(&inTan, StreamValueDeleter()),
-                                               std::shared_ptr<AEGP_StreamValue2>(&outTan, StreamValueDeleter()));
+    KeyframeSuite().SetKeyframeSpatialTangents(m_property, keyIndex, makeStreamValue2Ptr(inTan),
+                                               makeStreamValue2Ptr(outTan));
 }
 
 inline AEGP_StreamValue2 BaseProperty::convertToAEValue(const KeyFrame::TangentValue &value)
@@ -275,10 +274,9 @@ inline AEGP_StreamValue2 BaseProperty::convertToAEValue(const KeyFrame::TangentV
     AEGP_StreamValue2 aeValue;
     aeValue.streamH = *m_property;
     std::visit(overloaded{
-                   [&](double val) { aeValue.val.one_d = val; },
-                   [&](TwoDVal val) { aeValue.val.two_d = val.ToAEGPTwoDVal(); },
-                   [&](ThreeDVal val) { aeValue.val.three_d = val.ToAEGPThreeDVal(); },
-                   [&](ColorVal val) { aeValue.val.color = val.ToAEGPColorVal(); },
+                   [&](double val) { aeValue.val.one_d = val; }, [&](TwoDVal val) { aeValue.val.two_d = val.toAEGP(); },
+                   [&](ThreeDVal val) { aeValue.val.three_d = val.toAEGP(); },
+                   [&](ColorVal val) { aeValue.val.color = val.toAEGP(); },
                    [&](std::monostate) {} // Do nothing for std::monostate
                },
                value);
@@ -308,7 +306,7 @@ KeyFrame::TangentValue BaseProperty::convertToTangentValue(AEGP_StreamValue2 val
 double OneDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    double value = val->val.one_d;
+    double value = val->get().val.one_d;
     return value;
 }
 
@@ -317,61 +315,56 @@ void OneDProperty::setValue(double value)
 
     AEGP_StreamValue2 val;
     val.val.one_d = value;
-    StreamSuite().SetStreamValue(m_property,
-                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    StreamSuite().SetStreamValue(m_property, makeStreamValue2Ptr(val));
 }
 
 TwoDVal TwoDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    TwoDVal value(val->val.two_d);
+    TwoDVal value(val->get().val.two_d);
     return value;
 }
 
 void TwoDProperty::setValue(TwoDVal value)
 {
     AEGP_StreamValue2 val;
-    val.val.two_d = value.ToAEGPTwoDVal();
-    StreamSuite().SetStreamValue(m_property,
-                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    val.val.two_d = value.toAEGP();
+    StreamSuite().SetStreamValue(m_property, makeStreamValue2Ptr(val));
 }
 
 ThreeDVal ThreeDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    ThreeDVal value(val->val.three_d);
+    ThreeDVal value(val->get().val.three_d);
     return value;
 }
 
 void ThreeDProperty::setValue(ThreeDVal value)
 {
     AEGP_StreamValue2 val;
-    val.val.three_d = value.ToAEGPThreeDVal();
-    StreamSuite().SetStreamValue(m_property,
-                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    val.val.three_d = value.toAEGP();
+    StreamSuite().SetStreamValue(m_property, makeStreamValue2Ptr(val));
 }
 
 ColorVal ColorProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
 
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    ColorVal value(val->val.color);
+    ColorVal value(val->get().val.color);
     return value;
 }
 
 void ColorProperty::setValue(ColorVal value)
 {
     AEGP_StreamValue2 val;
-    val.val.color = value.ToAEGPColorVal();
-    StreamSuite().SetStreamValue(m_property,
-                                 std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    val.val.color = value.toAEGP();
+    StreamSuite().SetStreamValue(m_property, makeStreamValue2Ptr(val));
 }
 
 std::shared_ptr<Marker> MarkerProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    return std::make_shared<Marker>(
-        std::shared_ptr<AEGP_MarkerValP>(new AEGP_MarkerValP(val->val.markerP), MarkerDeleter()));
+    return std::make_shared<Marker>(makeMarkerValPtr(val->get().val.markerP));
 }
 
 std::shared_ptr<Marker> MarkerProperty::addMarker(double time)
@@ -381,36 +374,35 @@ std::shared_ptr<Marker> MarkerProperty::addMarker(double time)
     AEGP_StreamValue2 val;
     val.streamH = *m_property;
     val.val.markerP = *mrk;
-    KeyframeSuite().SetKeyframeValue(
-        m_property, idx, std::shared_ptr<AEGP_StreamValue2>(new AEGP_StreamValue2(val), StreamValueDeleter()));
+    KeyframeSuite().SetKeyframeValue(m_property, idx, makeStreamValue2Ptr(val));
     return std::make_shared<Marker>(mrk);
 }
 
 int LayerIDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    int value = val->val.layer_id;
+    int value = val->get().val.layer_id;
     return value;
 }
 
 int MaskIDProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    int value = val->val.mask_id;
+    int value = val->get().val.mask_id;
     return value;
 }
 
 std::shared_ptr<MaskOutline> MaskOutlineProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
-    return std::make_shared<MaskOutline>(std::make_shared<AEGP_MaskOutlineValH>(val->val.mask));
+    return std::make_shared<MaskOutline>(makeMaskOutlineValPtr(val->get().val.mask));
 }
 
 std::shared_ptr<TextDocument> TextDocumentProperty::getValue(LTimeMode timeMode, double time, bool preExpression) const
 {
     StreamValue2Ptr val = StreamSuite().GetNewStreamValue(m_property, timeMode, SecondsToTime(time), preExpression);
 
-    return std::make_shared<TextDocument>(std::make_shared<AEGP_TextDocumentH>(val->val.text_documentH));
+    return std::make_shared<TextDocument>(makeTextDocumentPtr(val->get().val.text_documentH));
 }
 
 int PropertyGroup::getNumProperties() const

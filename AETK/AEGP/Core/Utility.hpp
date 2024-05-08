@@ -17,17 +17,12 @@ template <class... Ts> struct overloaded : Ts...
 };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-inline bool isValidItemType(ItemType type, ItemPtr item) {
-    AEGP_ItemType typeH;
-    SuiteManager::GetInstance().GetSuiteHandler().ItemSuite9()->AEGP_GetItemType(*item, &typeH);
-    return type == static_cast<ItemType>(typeH);
-}
+double TimeToSeconds(const A_Time &time);
 
+A_Time SecondsToTime(double seconds);
 
-inline bool isValidLayerType(ObjectType type, LayerPtr layer) {
-    AEGP_ObjectType typeH;
-	SuiteManager::GetInstance().GetSuiteHandler().LayerSuite8()->AEGP_GetLayerObjectType(*layer, &typeH);
-	return type == static_cast<ObjectType>(typeH);
-}
+int TimeToFrames(const A_Time &time);
+
+A_Time FramesToTime(int frames);
 
 #endif // UTILITY_HPP

@@ -10,8 +10,8 @@ tk::shared_ptr<Item> Item::activeItem()
     auto item = ItemSuite().GetActiveItem();
     if (!item)
     {
-		return nullptr;
-	}
+        return nullptr;
+    }
     return ItemFactory::createItem(item);
 }
 
@@ -127,13 +127,13 @@ void Item::setParentFolder(tk::shared_ptr<Item> folder)
 double Item::duration()
 {
 
-    auto duration = TimeToSeconds(ItemSuite().GetItemDuration(m_item));
+    auto duration = ItemSuite().GetItemDuration(m_item).toSeconds();
     return duration;
 }
 
 double Item::currentTime()
 {
-    auto currentTime = TimeToSeconds(ItemSuite().GetItemCurrentTime(m_item));
+    auto currentTime = ItemSuite().GetItemCurrentTime(m_item).toSeconds();
     return currentTime;
 }
 
@@ -190,15 +190,16 @@ FolderItem FolderItem::create(const std::string &name, tk::shared_ptr<Item> pare
 
 tk::shared_ptr<ItemCollection> FolderItem::children()
 {
-    tk::shared_ptr<Item> item = std::make_shared<Item>(m_item);
-    return std::make_shared<ItemCollection>(item);
+    if (!m_children) {
+		m_children = std::make_shared<ItemCollection>(std::make_shared<FolderItem>(m_item));
+	}
+    return m_children;
 }
 
 CompItem CompItem::mostRecent()
 {
-
-    auto comp = CompSuite().GetMostRecentlyUsedComp();
-    return CompItem(comp);
+    // auto comp = CompSuite().GetMostRecentlyUsedComp();
+    return CompItem(CompSuite().GetMostRecentlyUsedComp());
 }
 
 CompItem CompItem::create(const std::string &name, int width, int height, double pixelAspect, double duration,
@@ -213,7 +214,11 @@ CompItem CompItem::create(const std::string &name, int width, int height, double
 // Adjusted layers method implementation
 tk::shared_ptr<LayerCollection> CompItem::layers()
 {
-    return std::make_shared<LayerCollection>(m_comp);
+    if (!m_layerCollection)
+    {
+        m_layerCollection = std::make_shared<LayerCollection>(m_comp);
+    }
+    return m_layerCollection;
 }
 
 DownsampleFactor CompItem::downsampleFactor()

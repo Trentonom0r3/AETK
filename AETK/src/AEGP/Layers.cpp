@@ -204,12 +204,15 @@ tk::shared_ptr<OneDProperty> AVLayer::PlaneSubdivision()
 
 tk::shared_ptr<Layer> Layer::activeLayer()
 {
-    auto layerptr = LayerSuite().GetActiveLayer();
-    if (layerptr == NULL)
+    try
     {
-		return nullptr;
-	}
+    auto layerptr = LayerSuite().GetActiveLayer();
     return LayerFactory::createLayer(layerptr);
+    }
+    catch (const AEException& e)
+    {
+		throw e;
+	}
 }
 
 std::string Layer::getName()
@@ -273,17 +276,17 @@ bool Layer::isLayerAudioOn()
 
 double Layer::currentTime()
 {
-    return TimeToSeconds(LayerSuite().GetLayerCurrentTime(m_layer, LTimeMode::CompTime));
+    return LayerSuite().GetLayerCurrentTime(m_layer, LTimeMode::CompTime).toSeconds();
 }
 
 double Layer::duration()
 {
-    return TimeToSeconds(LayerSuite().GetLayerDuration(m_layer, LTimeMode::CompTime));
+    return LayerSuite().GetLayerDuration(m_layer, LTimeMode::CompTime).toSeconds();
 }
 
 double Layer::offset()
 {
-    return TimeToSeconds(LayerSuite().GetLayerOffset(m_layer));
+    return LayerSuite().GetLayerOffset(m_layer).toSeconds();
 }
 
 void Layer::setOffset(double offset)
@@ -294,7 +297,7 @@ void Layer::setOffset(double offset)
 double Layer::inPoint()
 {
     auto inPoint = LayerSuite().GetLayerInPoint(m_layer, LTimeMode::CompTime);
-    return TimeToSeconds(inPoint);
+    return inPoint.toSeconds();
 }
 
 void Layer::setInPoint(double inPoint)
@@ -364,6 +367,11 @@ LayerSamplingQual Layer::getSamplingQuality()
 void Layer::setSamplingQuality(LayerSamplingQual quality)
 {
     LayerSuite().SetLayerSamplingQuality(m_layer, quality);
+}
+
+int Layer::numEffects()
+{
+    return EffectSuite().getLayerNumEffects(m_layer);
 }
 
 tk::shared_ptr<OneDProperty> CameraLayer::Zoom()

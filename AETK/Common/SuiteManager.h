@@ -19,23 +19,11 @@
  *********************************************************************/
 
 #pragma once
-// AE_Effect.h checks for this.
-#include "Headers/AEConfig.h"
-#include "Util/entry.h"
-
+#include "AEConfig.h"
 #ifdef AE_OS_WIN
-#elif defined(AE_OS_MAC)
-#include <CoreFoundation/CoreFoundation.h>
-#elif defined(AE_OS_ANDROID)
-#include <jni.h>
-#elif defined(AE_OS_IOS)
-#include <CoreFoundation/CoreFoundation.h>
-#elif defined(AE_OS_APPLE_SIM)
-#include <CoreFoundation/CoreFoundation.h>
-#else
-#error "unrecognized AE platform"
+#include <Windows.h>
 #endif
-
+#include "entry.h"
 // AE Headers
 #include "Headers/A.h"
 #include "Headers/AE_GeneralPlug.h"
@@ -43,36 +31,36 @@
 #include "Util/Param_Utils.h"
 #include "Util/String_Utils.h"
 
-#include "Util/AEGP_SuiteHandler.h"
 #include "Headers/AE_Macros.h"
+#include "Util/AEGP_SuiteHandler.h"
 
- /*
-  * File: SuiteManager.h
-  * Description: Singleton class managing the After Effects suite handler and
-  * plugin ID.
-  *
-  * Guidelines for Contributors:
-  * 1. Singleton Pattern: Recognize that SuiteManager is a singleton and should
-  * not be instantiated directly.
-  * 2. Suite Handling: Understand how SuiteManager provides access to AE suites.
-  * 3. No Alteration: Do not modify this file. It is crucial for the stable
-  * operation of the entire plugin.
-  */
+/*
+ * File: SuiteManager.h
+ * Description: Singleton class managing the After Effects suite handler and
+ * plugin ID.
+ *
+ * Guidelines for Contributors:
+ * 1. Singleton Pattern: Recognize that SuiteManager is a singleton and should
+ * not be instantiated directly.
+ * 2. Suite Handling: Understand how SuiteManager provides access to AE suites.
+ * 3. No Alteration: Do not modify this file. It is crucial for the stable
+ * operation of the entire plugin.
+ */
 
-  /**
-   * @class SuiteManager
-   * @brief Singleton class managing the After Effects suite handler and plugin
-   * ID.
-   *
-   * The SuiteManager class is responsible for managing the After Effects suite
-   * handler and plugin ID. It follows the Singleton pattern to ensure that only
-   * one instance of the class can exist. The class provides methods to initialize
-   * the suite handler, get the suite handler, set the plugin ID, and get the
-   * plugin ID.
-   */
+/**
+ * @class SuiteManager
+ * @brief Singleton class managing the After Effects suite handler and plugin
+ * ID.
+ *
+ * The SuiteManager class is responsible for managing the After Effects suite
+ * handler and plugin ID. It follows the Singleton pattern to ensure that only
+ * one instance of the class can exist. The class provides methods to initialize
+ * the suite handler, get the suite handler, set the plugin ID, and get the
+ * plugin ID.
+ */
 class SuiteManager
 {
-public:
+  public:
     /**
      * @brief Gets the singleton instance of SuiteManager.
      *
@@ -81,15 +69,15 @@ public:
      * @return SuiteManager& The reference to the singleton instance of
      * SuiteManager.
      */
-    static SuiteManager& GetInstance()
+    static SuiteManager &GetInstance()
     {
         static SuiteManager instance;
         return instance;
     }
 
     // Deleted copy constructor and assignment operator to ensure singleton
-    SuiteManager(SuiteManager const&) = delete;
-    void operator=(SuiteManager const&) = delete;
+    SuiteManager(SuiteManager const &) = delete;
+    void operator=(SuiteManager const &) = delete;
 
     /**
      * @brief Initializes the suite handler.
@@ -99,7 +87,7 @@ public:
      *
      * @param pica_basicP The SPBasicSuite pointer.
      */
-    void InitializeSuiteHandler(SPBasicSuite* pica_basicP)
+    void InitializeSuiteHandler(SPBasicSuite *pica_basicP)
     {
         if (!suitesInitialized)
         {
@@ -115,7 +103,7 @@ public:
      *
      * @return AEGP_SuiteHandler& The reference to the suite handler.
      */
-    AEGP_SuiteHandler& GetSuiteHandler() { return *suites; }
+    AEGP_SuiteHandler &GetSuiteHandler() { return *suites; }
 
     /**
      * @brief Sets the plugin ID.
@@ -124,10 +112,7 @@ public:
      *
      * @param pluginIDPtr The AEGP_PluginID pointer.
      */
-    void SetPluginID(AEGP_PluginID* pluginIDPtr)
-    {
-        this->pluginIDPtr = pluginIDPtr;
-    }
+    void SetPluginID(AEGP_PluginID *pluginIDPtr) { this->pluginIDPtr = pluginIDPtr; }
 
     /**
      * @brief Gets the plugin ID.
@@ -136,22 +121,19 @@ public:
      *
      * @return const AEGP_PluginID* The constant pointer to the plugin ID.
      */
-    AEGP_PluginID* GetPluginID() const { return pluginIDPtr; }
+    AEGP_PluginID *GetPluginID() const { return pluginIDPtr; }
 
-private:
+  private:
     /**
      * @brief Default constructor.
      *
      * The default constructor is private to prevent direct instantiation of the
      * SuiteManager class.
      */
-    SuiteManager()
-        : suites(nullptr), suitesInitialized(false), pluginIDPtr(nullptr)
-    {
-    }
+    SuiteManager() : suites(nullptr), suitesInitialized(false), pluginIDPtr(nullptr) {}
 
-    AEGP_SuiteHandler* suites; /**< Pointer to the suite handler. */
-    bool suitesInitialized; /**< Flag indicating if the suite handler has been
-                               initialized. */
-    AEGP_PluginID* pluginIDPtr; /**< Pointer to the plugin ID. */
+    AEGP_SuiteHandler *suites;  /**< Pointer to the suite handler. */
+    bool suitesInitialized;     /**< Flag indicating if the suite handler has been
+                                   initialized. */
+    AEGP_PluginID *pluginIDPtr; /**< Pointer to the plugin ID. */
 };

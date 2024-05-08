@@ -98,13 +98,24 @@ void LayerCollection::sort(std::function<bool(tk::shared_ptr<Layer>, tk::shared_
     }
 }
 
-tk::vector<tk::shared_ptr<Layer>> LayerCollection::createCollection()
+void LayerCollection::createCollection()
 {
     int numLayers = LayerSuite().GetCompNumLayers(baseComp);
     for (int i = 0; i < numLayers; i++)
     {
-        auto layer = LayerSuite().GetCompLayerByIndex(baseComp, i);
-        m_collection.push_back(std::make_shared<Layer>(layer));
+        m_collection.push_back(std::make_shared<Layer>(LayerSuite().GetCompLayerByIndex(baseComp, i)));
     }
-    return m_collection;
+}
+
+tk::vector<tk::shared_ptr<Layer>> LayerCollection::find(const std::function<bool(tk::shared_ptr<Layer>)> &predicate)
+{
+    tk::vector<tk::shared_ptr<Layer>> newCollection;
+    for (auto layer : m_collection)
+    {
+        if (predicate(layer))
+        {
+			newCollection.push_back(layer);
+		}
+	}
+	return newCollection;
 }

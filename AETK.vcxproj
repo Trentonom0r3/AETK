@@ -69,13 +69,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
-    <ExternalIncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\Program Files\Python312\include;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgInstalledDir>..\..\..\vcpkg\installed</VcpkgInstalledDir>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -133,6 +137,7 @@
     <ClInclude Include="aetk\aegp\core\Core.hpp" />
     <ClInclude Include="aetk\aegp\core\Enums.hpp" />
     <ClInclude Include="aetk\aegp\core\Exception.hpp" />
+    <ClInclude Include="AETK\AEGP\Core\PyFx.hpp" />
     <ClInclude Include="aetk\aegp\core\Types.hpp" />
     <ClInclude Include="aetk\aegp\core\Suites.hpp" />
     <ClInclude Include="aetk\aegp\core\Utility.hpp" />
@@ -155,8 +160,11 @@
     <ClInclude Include="AETK\AEGP\Util\TaskScheduler.hpp" />
     <ClInclude Include="aetk\common\Common.hpp" />
     <ClInclude Include="aetk\common\SuiteManager.h" />
+    <ClInclude Include="Header.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AETK\AEGP\Core\PyFx.cpp" />
+    <ClCompile Include="AETK\AEGP\Core\Utility.cpp" />
     <ClCompile Include="AETK\src\AEGP\App.cpp" />
     <ClCompile Include="AETK\src\AEGP\Core\Suites.cpp" />
     <ClCompile Include="AETK\src\AEGP\Core\Types.cpp" />
@@ -165,12 +173,14 @@
     <ClCompile Include="AETK\src\AEGP\Memory\ItemCollection.cpp" />
     <ClCompile Include="AETK\src\AEGP\Memory\LayerCollection.cpp" />
     <ClCompile Include="AETK\src\AEGP\Project.cpp" />
-    <ClCompile Include="AETK\src\AEGP\Template\Plugin.cpp" />
     <ClCompile Include="AETK\src\AEGP\Util\Effects.cpp" />
     <ClCompile Include="AETK\src\AEGP\Util\Masks.cpp" />
     <ClCompile Include="AETK\src\AEGP\Util\Properties.cpp" />
     <ClCompile Include="AE\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="AE\Util\MissingSuiteError.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AETK\PyFx.i" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

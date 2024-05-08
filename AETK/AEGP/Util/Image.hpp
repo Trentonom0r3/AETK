@@ -71,6 +71,10 @@ class Image
 
     static inline UniformImage data(WorldPtr mWorld)
     {
+        if (!mWorld)
+		{
+			return UniformImage();
+		}
         std::tuple<A_long, A_long> size = WorldSuite().getSize(mWorld);
         auto rowbytes = WorldSuite().getRowBytes(mWorld);
         void *baseAddr = nullptr;

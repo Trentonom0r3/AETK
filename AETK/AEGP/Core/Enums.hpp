@@ -13,9 +13,9 @@
 
 enum class MemFlag
 {
-    NONE = AEGP_MemFlag_NONE,
-    CLEAR = AEGP_MemFlag_CLEAR,
-    QUIET = AEGP_MemFlag_QUIET
+    NONE = AEGP_MemFlag_NONE, /* No Memory Flag.*/
+    CLEAR = AEGP_MemFlag_CLEAR, /* Clear Memory Flag.*/
+    QUIET = AEGP_MemFlag_QUIET /* Quiet Memory Flag.*/
 };
 
 enum class Platform
@@ -67,6 +67,13 @@ enum class LightType
     AMBIENT = AEGP_LightType_AMBIENT,
     RESERVED1 = AEGP_LightType_RESERVED1,
     NUM_TYPES = AEGP_LightType_NUM_TYPES
+};
+
+enum class FootageSignature
+{
+	NONE = AEGP_FootageSignature_NONE,
+	MISSING = AEGP_FootageSignature_MISSING,
+	SOLID = AEGP_FootageSignature_SOLID
 };
 
 enum class LightFalloffType
@@ -432,6 +439,13 @@ enum class MarkerStringType
     URL = AEGP_MarkerString_URL,
     FRAME_TARGET = AEGP_MarkerString_FRAME_TARGET,
     CUE_POINT_NAME = AEGP_MarkerString_CUE_POINT_NAME
+};
+
+enum class MarkerFlag
+{
+	NONE = AEGP_MarkerFlag_NONE,
+	NAVIGATION = AEGP_MarkerFlag_NAVIGATION,
+	PROTECT_REGION = AEGP_MarkerFlag_PROTECT_REGION
 };
 
 enum class EffectFlags

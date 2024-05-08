@@ -68,7 +68,7 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Adobe\Adobe After Effects 2023\Support Files\Plug-ins\Effects</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(AE_PLUGIN_BUILD_DIR)\AEGP\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\Adobe\Adobe After Effects 2023\Support Files\Plug-ins\Effects</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
@@ -97,12 +97,19 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.aex</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\..\AETK;$(VcpkgRoot)\installed\x64-windows-static\include;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files\Python312\include;C:\Users\tjerf\source\repos\PyFxCore;..\..\..\..\AETK;$(VcpkgRoot)\installed\x64-windows-static\include;$(VcpkgRoot)\installed\x64-windows\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python312\include;..\..\..\..\AETK;C:\Users\tjerf\vcpkg\installed\x64-windows\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
     <VcpkgInstalledDir>..\..\..\..\..\..\..\vcpkg\installed</VcpkgInstalledDir>
-    <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgInstalledDir>..\..\..\..\..\..\..\vcpkg\installed</VcpkgInstalledDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -135,6 +142,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -152,8 +160,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuiod.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuucd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icudtd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuind.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Python312\libs;C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Program Files\Python312\libs\python312_d.lib";"C:\Users\tjerf\source\repos\PyFxCore\x64\Debug\PyFxCore.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuind.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuucd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icudtd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuiod.lib";%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
@@ -173,7 +181,7 @@
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -189,6 +197,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -207,6 +217,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;C:\Program Files\Python312\libs;C:\Users\tjerf\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Program Files\Python312\libs\python312.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\icuin.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\icuuc.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\icudt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\icuio.lib";%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
