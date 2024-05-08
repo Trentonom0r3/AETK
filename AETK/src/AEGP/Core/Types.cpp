@@ -14,12 +14,12 @@ Marker Marker::duplicateMarker()
     return Marker(marker);
 }
 
-void Marker::setFlag(AEGP_MarkerFlagType flagType, bool valueB)
+void Marker::setFlag(MarkerFlag flagType, bool valueB)
 {
     MarkerSuite().setMarkerFlag(m_markerP, flagType, valueB);
 }
 
-bool Marker::getFlag(AEGP_MarkerFlagType flagType)
+bool Marker::getFlag(MarkerFlag flagType)
 {
     return MarkerSuite().getMarkerFlag(m_markerP, flagType);
 }
@@ -66,7 +66,7 @@ void Marker::setDuration(double durationD)
 
 double Marker::getDuration()
 {
-    return TimeToSeconds(MarkerSuite().getMarkerDuration(m_markerP));
+    return MarkerSuite().getMarkerDuration(m_markerP).toSeconds();
 }
 
 void Marker::setLabel(int value)
@@ -102,7 +102,7 @@ MaskVertex MaskOutline::getVertexInfo(int which_pointL)
 
 void MaskOutline::setVertexInfo(int which_pointL, MaskVertex vertexP)
 {
-    MaskOutlineSuite().setMaskOutlineVertexInfo(m_mask_outlineP, which_pointL, vertexP.ToAEGPMaskVertex());
+    MaskOutlineSuite().setMaskOutlineVertexInfo(m_mask_outlineP, which_pointL, vertexP.toAEGP());
 }
 
 void MaskOutline::createVertex(int insert_position)
@@ -128,12 +128,12 @@ MaskFeather MaskOutline::getFeatherInfo(int which_featherL)
 
 void MaskOutline::setFeatherInfo(int which_featherL, MaskFeather featherP)
 {
-    MaskOutlineSuite().setMaskOutlineFeatherInfo(m_mask_outlineP, which_featherL, featherP.ToAEGPMaskFeather());
+    MaskOutlineSuite().setMaskOutlineFeatherInfo(m_mask_outlineP, which_featherL, featherP.toAEGP());
 }
 
 int MaskOutline::createFeather(MaskFeather featherP0)
 {
-    return MaskOutlineSuite().createMaskOutlineFeather(m_mask_outlineP, featherP0.ToAEGPMaskFeather());
+    return MaskOutlineSuite().createMaskOutlineFeather(m_mask_outlineP, featherP0.toAEGP());
 }
 
 void MaskOutline::deleteFeather(int index)
@@ -149,4 +149,71 @@ std::string TextDocument::getText()
 void TextDocument::setText(const std::string &unicodePS)
 {
     TextDocumentSuite().setText(m_text_documentP, unicodePS);
+}
+
+std::variant<OneD, TwoD, ThreeD, Color> StreamValue2::value()
+{
+    auto streamType = StreamSuite().GetStreamType(makeStreamRefPtr(get().streamH, false));
+    OneD one_d;
+    TwoD two_d;
+    ThreeD three_d;
+    Color color;
+
+    switch (streamType)
+    {
+    case StreamType::OneD:
+        one_d = get().val.one_d;
+		return one_d;
+    case StreamType::TwoD:
+    case StreamType::TwoD_SPATIAL: {
+        two_d = std::make_tuple(get().val.two_d.x, get().val.two_d.y);
+        return two_d;
+
+    }
+    case StreamType::ThreeD:
+    case StreamType::ThreeD_SPATIAL: {
+        three_d = std::make_tuple(get().val.three_d.x, get().val.three_d.y, get().val.three_d.z);
+        return three_d;
+    }
+    case StreamType::COLOR: {
+        color = std::make_tuple(get().val.color.redF, get().val.color.greenF,
+                                    get().val.color.blueF, get().val.color.alphaF);
+        return color;
+    }
+    default:
+        return 0;
+    }
+}
+
+AEGP_StreamValue2 &StreamValue2::streamFromValue(StreamRefPtr streamref, std::variant<OneD, TwoD, ThreeD, Color> value)
+{
+    AEGP_StreamValue2 val;
+    //val.streamH = *streamref;
+    auto type = StreamSuite().GetStreamType(streamref);
+    switch (type)
+    {
+    case StreamType::OneD:
+        val.val.one_d = std::get<double>(value);
+        break;
+    case StreamType::TwoD: // std::tuple<double, double>
+    case StreamType::TwoD_SPATIAL:
+        val.val.two_d.x = std::get<0>(std::get<TwoD>(value));
+        val.val.two_d.y = std::get<1>(std::get<TwoD>(value));
+        break;
+    case StreamType::ThreeD: // std::tuple<double, double, double>
+    case StreamType::ThreeD_SPATIAL:
+        val.val.three_d.x = std::get<0>(std::get<ThreeD>(value));
+        val.val.three_d.y = std::get<1>(std::get<ThreeD>(value));
+        val.val.three_d.z = std::get<2>(std::get<ThreeD>(value));
+        break;
+    case StreamType::COLOR: // std::tuple<double, double, double, double>
+        val.val.color.redF = std::get<0>(std::get<Color>(value));
+        val.val.color.greenF = std::get<1>(std::get<Color>(value));
+        val.val.color.blueF = std::get<2>(std::get<Color>(value));
+        val.val.color.alphaF = std::get<3>(std::get<Color>(value));
+        break;
+    default:
+        break;
+    }
+    return val;
 }

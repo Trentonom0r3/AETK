@@ -34,7 +34,7 @@ class ItemCollection : public Collection<tk::shared_ptr<Item>>
 {
   public:
     ItemCollection() = default;
-    ItemCollection(tk::shared_ptr<Item> FolderItem) : baseItem(FolderItem) { m_collection = createCollection(); }
+    ItemCollection(tk::shared_ptr<Item> FolderItem) : baseItem(FolderItem) { createCollection(); }
     ItemCollection(tk::vector<tk::shared_ptr<Item>> items) : Collection(items) {}
     ~ItemCollection() = default;
 
@@ -60,7 +60,9 @@ class ItemCollection : public Collection<tk::shared_ptr<Item>>
 
     tk::vector<tk::shared_ptr<Item>> slice(int start) override;
 
-    tk::vector<tk::shared_ptr<Item>> createCollection();
+    void createCollection();
+
+    tk::vector<tk::shared_ptr<Item>> find(const std::function<bool(tk::shared_ptr<Item>)> &predicate);
 
   private:
     tk::shared_ptr<Item> baseItem;

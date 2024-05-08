@@ -33,4 +33,12 @@
 #include <variant>
 #include <vector>
 
+#include <condition_variable>
+
+
+using OneD = double;
+using TwoD = std::tuple<double, double>;
+using ThreeD = std::tuple<double, double, double>;
+using Color = std::tuple<double, double, double, double>;
+
 #endif // COMMON_HPP

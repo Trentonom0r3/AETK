@@ -4,28 +4,43 @@
 
 tk::shared_ptr<Effect> Effect::apply(tk::shared_ptr<Layer> layer, const std::string &matchName)
 {
-    AEGP_InstalledEffectKey currentKey = 0; // Assuming 0 is a valid initial key or indicates 'start'.
-    A_long numEffects = EffectSuite().getNumInstalledEffects();
-
-    for (A_long i = 0; i < numEffects; ++i)
+    try
     {
-        std::string currentMatchName = EffectSuite().getEffectMatchName(currentKey);
-        if (currentMatchName == matchName)
-        {
-            // Match found, apply effect.
-            EffectRefPtr effectRef = EffectSuite().applyEffect(layer->getLayer(), currentKey);
-            // Assuming EffectRefPtr can be converted to tk::shared_ptr<Effect>
-            return tk::make_shared<Effect>(effectRef);
-        }
-        currentKey = EffectSuite().getNextInstalledEffect(currentKey);
-    }
 
-    return nullptr;
+        AEGP_InstalledEffectKey currentKey = 0; // Assuming 0 is a valid initial key or indicates 'start'.
+        A_long numEffects = EffectSuite().getNumInstalledEffects();
+
+        for (A_long i = 0; i < numEffects; ++i)
+        {
+            std::string currentMatchName = EffectSuite().getEffectMatchName(currentKey);
+            if (currentMatchName == matchName)
+            {
+                // Match found, apply effect.
+                EffectRefPtr effectRef = EffectSuite().applyEffect(layer->getLayer(), currentKey);
+
+                return tk::make_shared<Effect>(effectRef);
+            }
+            currentKey = EffectSuite().getNextInstalledEffect(currentKey);
+        }
+
+        return nullptr;
+    }
+    catch (const AEException &e)
+    {
+        throw e;
+    }
 }
 
 std::string Effect::name()
 {
-    return EffectSuite().getEffectName(m_key);
+    try
+    {
+        return EffectSuite().getEffectName(m_key);
+    }
+    catch (const AEException &e)
+    {
+        throw e;
+    }
 }
 
 std::string Effect::matchName()

@@ -33,8 +33,8 @@ class LayerCollection : public Collection<tk::shared_ptr<Layer>>
 {
   public:
     LayerCollection() = default;
-    LayerCollection(CompPtr comp) : baseComp(std::move(comp)) { m_collection = createCollection(); }
-    LayerCollection(tk::vector<tk::shared_ptr<Layer>> layers) : Collection(layers) {}
+    LayerCollection(CompPtr comp) : baseComp(comp) {createCollection(); }
+    LayerCollection(tk::vector<tk::shared_ptr<Layer>> layers) : Collection(layers), baseComp(CompPtr()) {}
     ~LayerCollection() = default;
 
 
@@ -77,7 +77,9 @@ class LayerCollection : public Collection<tk::shared_ptr<Layer>>
 
     void sort(std::function<bool(tk::shared_ptr<Layer>, tk::shared_ptr<Layer>)> compare);
 
-    tk::vector<tk::shared_ptr<Layer>> createCollection();
+    void createCollection();
+
+    tk::vector<tk::shared_ptr<Layer>> find(const std::function<bool(tk::shared_ptr<Layer>)> &predicate);
 
   protected:
     CompPtr baseComp;

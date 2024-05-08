@@ -65,33 +65,29 @@ tk::vector<tk::shared_ptr<Item>> ItemCollection::slice(int start)
     return newCollection;
 }
 
-tk::vector<tk::shared_ptr<Item>> ItemCollection::createCollection()
+void ItemCollection::createCollection()
 {
-
-#ifdef TK_INTERNAL
-    TaskScheduler::getInstance().scheduleTask([this]() {
-        auto proj = ProjSuite6().GetProjectByIndex(0);
-        auto currentItem = this->baseItem->getItem();
-        while (*currentItem.get() != NULL)
-        {
-            if (*ItemSuite9().GetItemParentFolder(currentItem).get() == *baseItem->getItem().get())
-            {
-                m_collection.push_back(ItemFactory::createItem(currentItem));
-            }
-            currentItem = ItemSuite9().GetNextProjItem(proj, currentItem);
-        }
-    });
-#else
     auto proj = ProjSuite().GetProjectByIndex(0);
     auto currentItem = this->baseItem->getItem();
-    while (*currentItem.get() != NULL)
+    while (&currentItem != NULL)
     {
-        if (*ItemSuite().GetItemParentFolder(currentItem) == *baseItem->getItem())
+        if (ItemSuite().GetItemParentFolder(currentItem) == baseItem->getItem())
         {
             m_collection.push_back(ItemFactory::createItem(currentItem));
         }
         currentItem = ItemSuite().GetNextProjItem(proj, currentItem);
     }
-#endif
-    return m_collection;
+}
+
+tk::vector<tk::shared_ptr<Item>> ItemCollection::find(const std::function<bool(tk::shared_ptr<Item>)> &predicate)
+{
+    tk::vector<tk::shared_ptr<Item>> foundItems;
+    for (auto item : m_collection)
+    {
+        if (predicate(item))
+        {
+			foundItems.push_back(item);
+		}
+	}
+	return foundItems;
 }

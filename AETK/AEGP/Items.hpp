@@ -99,6 +99,9 @@ class FolderItem : public Item
     ItemType itemType() override { return ItemType::FOLDER; }
 
     tk::shared_ptr<ItemCollection> children(); // Returns the children of the folder
+
+    private:
+        tk::shared_ptr<ItemCollection> m_children;
 };
 
 class CompItem : public Item
@@ -115,29 +118,30 @@ class CompItem : public Item
 
     ItemType itemType() override { return ItemType::COMP; }
 
-    bool isFlagSet(CompFlag flag); // Returns true if the flag is set
+    bool isFlagSet(CompFlag flag);           // Returns true if the flag is set
     void setFlag(CompFlag flag, bool value); // Sets the flag
 
-    tk::shared_ptr<LayerCollection> layers(); // Returns the layers of the comp
+    tk::shared_ptr<LayerCollection> layers();
 
-    DownsampleFactor downsampleFactor(); // Returns the downsample factor
+    DownsampleFactor downsampleFactor();            // Returns the downsample factor
     void setDownsampleFactor(DownsampleFactor dsf); // Sets the downsample factor
 
-    ColorVal backgroundColor(); // Returns the background color of the comp
+    ColorVal backgroundColor();              // Returns the background color of the comp
     void setBackgroundColor(ColorVal color); // Sets the background color of the comp
 
     // AE_CompFlags, need to separate them
-    bool showLayerNameorSourceName(); // Returns true if the layer name or source name is shown
+    bool showLayerNameorSourceName();             // Returns true if the layer name or source name is shown
     void setShowLayerNameorSourceName(bool show); // Sets the show layer name or source name
 
-    bool showBlendModes(); // Returns true if the blend modes are shown
+    bool showBlendModes();             // Returns true if the blend modes are shown
     void setShowBlendModes(bool show); // Sets the show blend modes
 
-    double frameRate(); // Returns the frame rate of the comp
+    double frameRate();             // Returns the frame rate of the comp
     void setFrameRate(double rate); // Sets the frame rate of the comp
 
   private:
     CompPtr m_comp;
+    tk::shared_ptr<LayerCollection> m_layerCollection;
 };
 
 class FootageItem : public Item
@@ -154,15 +158,16 @@ class FootageItem : public Item
 
     ItemType itemType() override { return ItemType::FOOTAGE; }
 
-    std::tuple<A_long, A_long> numFiles(); // Returns the number of files
+    std::tuple<A_long, A_long> numFiles();             // Returns the number of files
     std::string path(int frameNum = 0, int index = 0); // Returns the path of the footage
 
-    void setProxy(tk::shared_ptr<Item> footage); // Sets the proxy of the footage
+    void setProxy(tk::shared_ptr<Item> footage);       // Sets the proxy of the footage
     void replaceFootage(tk::shared_ptr<Item> footage); // Replaces the footage
-    void replaceFromPath(std::string path); // Replaces the footage from a path
+    void replaceFromPath(std::string path);            // Replaces the footage from a path
 
   private:
     FootagePtr m_footage;
 };
+
 
 #endif // ITEM_HPP

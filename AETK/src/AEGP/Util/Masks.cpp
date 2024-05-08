@@ -9,7 +9,8 @@ tk::shared_ptr<BaseProperty> Mask::getProperty(MaskStream property)
 
 tk::shared_ptr<Mask> Mask::getMask(LayerPtr layer, A_long maskIndex)
 {
-    return tk::shared_ptr<Mask>();
+    auto maskref = MaskSuite().getLayerMaskByIndex(layer, maskIndex); 
+	return tk::make_shared<Mask>(maskref);
 }
 
 bool Mask::invert()

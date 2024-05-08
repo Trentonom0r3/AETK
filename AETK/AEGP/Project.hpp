@@ -147,6 +147,7 @@ class Project
      * @throws AEException If no project is currently active.
      */
     inline ProjectPtr init();
+    tk::shared_ptr<ItemCollection> m_itemCollection;
 };
 
 #endif // PROJECT_HPP

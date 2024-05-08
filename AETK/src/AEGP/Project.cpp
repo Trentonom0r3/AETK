@@ -21,9 +21,13 @@ Project Project::newProject(const std::string &path)
 
 tk::shared_ptr<ItemCollection> Project::items()
 {
-    auto folder = ProjSuite().GetProjectRootFolder(m_proj);
-    auto item = tk::make_shared<Item>(folder);
-    return tk::make_shared<ItemCollection>(item);
+    if (!m_itemCollection)
+    {
+        auto folder = ProjSuite().GetProjectRootFolder(m_proj);
+        auto item = tk::make_shared<Item>(folder);
+        m_itemCollection = tk::make_shared<ItemCollection>(item);
+	}
+    return m_itemCollection;
 }
 
 std::string Project::name()

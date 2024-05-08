@@ -396,3 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+AETK/src/AEGP/Core/Suites2.cpp
+AEGP/Grabba/Win/Grabba.vcxproj.filters
+AEGP/Grabba/Win/Grabba.vcxproj
+AEGP/Grabba/Grabba.cpp
+Header.h
+AEGP/Grabba/Win/Grabba.vcxproj
+AEGP/Grabba/Win/Grabba.vcxproj.filters
