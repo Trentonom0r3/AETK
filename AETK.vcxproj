@@ -176,8 +176,8 @@
     <ClCompile Include="AETK\src\AEGP\Util\Effects.cpp" />
     <ClCompile Include="AETK\src\AEGP\Util\Masks.cpp" />
     <ClCompile Include="AETK\src\AEGP\Util\Properties.cpp" />
-    <ClCompile Include="AE\Util\AEGP_SuiteHandler.cpp" />
-    <ClCompile Include="AE\Util\MissingSuiteError.cpp" />
+    <ClCompile Include="Util\AEGP_SuiteHandler.cpp" />
+    <ClCompile Include="Util\MissingSuiteError.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AETK\PyFx.i" />
