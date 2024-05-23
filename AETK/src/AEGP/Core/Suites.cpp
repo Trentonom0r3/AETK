@@ -1111,7 +1111,6 @@ LayerPtr LayerSuite::GetActiveLayer()
     auto future = ae::ScheduleOrExecute([]() {
         AEGP_LayerH layerH;
         AE_CHECK(SuiteManager::GetInstance().GetSuiteHandler().LayerSuite9()->AEGP_GetActiveLayer(&layerH));
-        CheckNotNull(layerH, "Error Getting Active Layer. No Active Layer Found.");
         return makeLayerPtr(layerH);
     });
     return future.get();

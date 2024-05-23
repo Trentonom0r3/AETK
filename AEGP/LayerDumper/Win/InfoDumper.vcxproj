@@ -130,11 +130,12 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -154,6 +155,7 @@
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuiod.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuucd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icudtd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\icuind.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
@@ -371,6 +373,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ResourceCompile Include="LayerDumper_PiPL.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\AETK\AEGP\Core\Utility.cpp" />
     <ClCompile Include="..\..\..\AETK\src\AEGP\App.cpp" />
     <ClCompile Include="..\..\..\AETK\src\AEGP\Core\Suites.cpp" />
     <ClCompile Include="..\..\..\AETK\src\AEGP\Core\Types.cpp" />
