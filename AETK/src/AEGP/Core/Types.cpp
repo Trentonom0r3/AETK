@@ -187,7 +187,7 @@ std::variant<OneD, TwoD, ThreeD, Color> StreamValue2::value()
 
 AEGP_StreamValue2 &StreamValue2::streamFromValue(StreamRefPtr streamref, std::variant<OneD, TwoD, ThreeD, Color> value)
 {
-    AEGP_StreamValue2 val;
+    AEGP_StreamValue2 val{};
     //val.streamH = *streamref;
     auto type = StreamSuite().GetStreamType(streamref);
     switch (type)

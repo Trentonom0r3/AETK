@@ -37,12 +37,12 @@ inline void bindStreamValue2(py::module &m)
     using Class = StreamValue2;
     using ClassPtr = std::shared_ptr<Class>;
 
-    py::class_<Class, std::shared_ptr<Class>>(m, "StreamValue2Ptr")
+    py::class_<Class, std::shared_ptr<Class>>(m, "StreamValue2")
         //.def(py::init<>())
         .def(py::init<StreamRefPtr, std::variant<OneD, TwoD, ThreeD, Color>>())
         .def("value", &Class::value, py::return_value_policy::reference);
 
-  //  py::class_<ClassPtr>(m, "StreamValue2Ptr");
+    py::class_<ClassPtr>(m, "StreamValue2Ptr");
 }
 
 inline void bind_mem_flag(py::module &m)

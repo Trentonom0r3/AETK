@@ -1100,7 +1100,7 @@ class Ratio // num is int, den is u_int
 
     A_Ratio &toAEGP()
     {
-        A_Ratio ratio;
+        A_Ratio ratio{};
         ratio.num = num;
         ratio.den = den;
         return ratio;

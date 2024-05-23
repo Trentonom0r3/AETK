@@ -127,6 +127,9 @@
     <ClCompile Include="..\..\..\AETK\src\AEGP\Util\Properties.cpp">
       <Filter>AETK_Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\AETK\AEGP\Core\Utility.cpp">
+      <Filter>AETK_Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\LayerDumper_PiPL.r">

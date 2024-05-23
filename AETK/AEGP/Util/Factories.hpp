@@ -85,6 +85,10 @@ class LayerFactory
   public:
     inline static tk::shared_ptr<Layer> createLayer(LayerPtr layer)
     {
+        if (layer == nullptr)
+		{
+			return nullptr;
+		}
         ObjectType type = LayerSuite().GetLayerObjectType(layer);
         switch (type)
         {

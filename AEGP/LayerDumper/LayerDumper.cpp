@@ -19,7 +19,7 @@ void LayerDumperCommand::execute() {
 }
 
 void LayerDumperCommand::updateMenu() {
-	if (!Layer::activeLayer()) {
+	if (!LayerSuite().GetActiveLayer()) {
 		// Disable the menu item if there is no active layer
 		enableCommand(false);
 	}
